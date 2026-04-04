@@ -1,5 +1,6 @@
 use axum::{extract::DefaultBodyLimit, routing::{get, post}, Router};
-use std::net::SocketAddr;
+use std::{net::SocketAddr, sync::Arc, time::Duration};
+use tower_governor::{governor::GovernorConfigBuilder, GovernorLayer};
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
@@ -35,14 +36,48 @@ async fn main() {
 
     let state = state::AppState::new(config.clone());
 
+    // Build the rate limiter for POST /api/v1/process.
+    // Uses a token-bucket algorithm keyed by client IP (SmartIpKeyExtractor checks
+    // X-Forwarded-For first, so it works correctly behind Fly.io's proxy).
+    // use_headers() adds X-RateLimit-* and Retry-After headers to every response.
+    let process_governor = Arc::new(
+        GovernorConfigBuilder::default()
+            .per_second(config.process_rps.into())
+            .burst_size(config.process_burst)
+            .use_headers()
+            .finish()
+            .expect("PROCESS_RPS and PROCESS_BURST must be greater than 0"),
+    );
+
+    // Spawn a background task that prunes stale entries from the limiter's
+    // in-memory map every 60 seconds to prevent unbounded memory growth.
+    let limiter = process_governor.limiter().clone();
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(Duration::from_secs(60));
+        loop {
+            interval.tick().await;
+            limiter.retain_recent();
+            tracing::debug!("rate limiter pruned; active keys: {}", limiter.len());
+        }
+    });
+
+    tracing::info!(
+        rps = config.process_rps,
+        burst = config.process_burst,
+        "rate limiter configured",
+    );
+
     // Routes that require a valid API key are nested under a middleware layer.
     // Public routes (health, palettes list) bypass authentication entirely.
+    // GovernorLayer is the outermost wrapper so rate limiting runs before auth,
+    // which prevents brute-force key enumeration.
     let protected = Router::new()
         .route("/api/v1/process", post(api::process))
         .layer(axum::middleware::from_fn_with_state(
             state.clone(),
             middleware::require_api_key,
-        ));
+        ))
+        .layer(GovernorLayer { config: process_governor });
 
     let app = Router::new()
         .route("/health", get(api::health))

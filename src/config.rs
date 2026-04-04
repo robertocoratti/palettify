@@ -35,6 +35,12 @@ pub struct Config {
 
     /// Maximum allowed request body size in bytes. Default: 50 MB.
     pub max_upload_bytes: usize,
+
+    /// Sustained request rate for POST /api/v1/process, per IP (req/sec). Default: 2.
+    pub process_rps: u32,
+
+    /// Burst allowance for POST /api/v1/process, per IP. Default: 5.
+    pub process_burst: u32,
 }
 
 impl Config {
@@ -71,12 +77,24 @@ impl Config {
             * 1024
             * 1024;
 
+        let process_rps = env::var("PROCESS_RPS")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(2);
+
+        let process_burst = env::var("PROCESS_BURST")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(5);
+
         Self {
             port,
             environment,
             palettes_dir,
             api_keys,
             max_upload_bytes,
+            process_rps,
+            process_burst,
         }
     }
 

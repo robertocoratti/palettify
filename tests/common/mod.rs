@@ -4,9 +4,7 @@
 // Rust resolves that to tests/common/mod.rs automatically.
 
 use axum::{
-    body::Body,
     extract::DefaultBodyLimit,
-    http::Request,
     middleware,
     routing::{get, post},
     Router,
@@ -33,6 +31,8 @@ pub fn test_state(api_keys: Option<Vec<&str>>) -> SharedState {
         palettes_dir: None,
         api_keys,
         max_upload_bytes: 10 * 1024 * 1024,
+        process_rps: 2,
+        process_burst: 5,
     };
 
     AppState::new(config)
@@ -110,18 +110,14 @@ pub fn make_multipart_body(
     (format!("multipart/form-data; boundary={boundary}"), body)
 }
 
-/// A hardcoded 1x1 RGB PNG used as a minimal valid image in process tests.
+/// Generates a valid 1×1 red RGB PNG using the image crate.
+/// Avoids hand-rolled byte arrays that are brittle across decoder versions.
 pub fn minimal_png() -> Vec<u8> {
-    vec![
-        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, // PNG signature
-        0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, // IHDR chunk length + type
-        0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, // width=1, height=1
-        0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53, // bit depth=8, color type=2 (RGB)
-        0xde, 0x00, 0x00, 0x00, 0x0c, 0x49, 0x44, 0x41, // IHDR CRC + IDAT length + type
-        0x54, 0x08, 0xd7, 0x63, 0xf8, 0xcf, 0xc0, 0x00, // compressed pixel data
-        0x00, 0x00, 0x02, 0x00, 0x01, 0xe2, 0x21, 0xbc, // IDAT data + CRC
-        0x33, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, // IDAT CRC + IEND
-        0x44, 0xae, 0x42, 0x60, 0x82,                   // IEND CRC
-    ]
+    use image::{ImageBuffer, ImageFormat, Rgb};
+    let img: ImageBuffer<Rgb<u8>, Vec<u8>> =
+        ImageBuffer::from_pixel(1, 1, Rgb([255u8, 0u8, 0u8]));
+    let mut buf = std::io::Cursor::new(Vec::new());
+    img.write_to(&mut buf, ImageFormat::Png).unwrap();
+    buf.into_inner()
 }
 
