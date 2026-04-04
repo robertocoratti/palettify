@@ -1,0 +1,17 @@
+# One Dark
+# https://github.com/atom/one-dark-ui
+#282c34
+#21252b
+#353b45
+#3e4451
+#545862
+#abb2bf
+#b6bdca
+#c8ccd4
+#e06c75
+#98c379
+#e5c07b
+#61afef
+#c678dd
+#56b6c2
+#d19a66

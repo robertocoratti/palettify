@@ -1,0 +1,19 @@
+# Tokyo Night
+# https://github.com/enkia/tokyo-night-vscode-theme
+#1a1b26
+#16161e
+#2f3549
+#343b58
+#444b6a
+#787c99
+#a9b1d6
+#cbccd1
+#c0caf5
+#ff9e64
+#e0af68
+#9ece6a
+#1abc9c
+#2ac3de
+#7aa2f7
+#bb9af7
+#f7768e

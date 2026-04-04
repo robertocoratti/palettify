@@ -1,0 +1,22 @@
+# Git
+.git
+.gitignore
+
+# Rust build artifacts — rebuilt inside Docker
+target
+
+# Environment files — secrets are injected at runtime
+.env
+.env.*
+
+# Editor & OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# CI/CD
+.github
+
+# Docs & misc
+*.md
