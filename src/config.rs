@@ -125,5 +125,81 @@ impl Config {
 }
 
 #[cfg(test)]
-#[path = "tests/config.rs"]
-mod tests;
+mod tests {
+    use super::*;
+    use std::{env, sync::Mutex};
+
+    // Config tests mutate process-wide env vars; run them serially to prevent
+    // interference between parallel test threads.
+    static ENV_LOCK: Mutex<()> = Mutex::new(());
+
+    #[test]
+    fn defaults_without_env() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        unsafe {
+            env::remove_var("PORT");
+            env::remove_var("ENVIRONMENT");
+            env::remove_var("API_KEYS");
+            env::remove_var("MAX_UPLOAD_MB");
+            env::remove_var("PALETTES_DIR");
+        }
+        let cfg = Config::from_env();
+        assert_eq!(cfg.port, 3000);
+        assert_eq!(cfg.environment, Environment::Development);
+        assert!(cfg.api_keys.is_none());
+        assert_eq!(cfg.max_upload_bytes, 50 * 1024 * 1024);
+        assert!(!cfg.is_production());
+        assert!(!cfg.auth_enabled());
+    }
+
+    #[test]
+    fn production_environment_flag() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        unsafe { env::set_var("ENVIRONMENT", "production"); }
+        let cfg = Config::from_env();
+        assert!(cfg.is_production());
+        unsafe { env::remove_var("ENVIRONMENT"); }
+    }
+
+    #[test]
+    fn api_keys_parsed_from_csv() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        unsafe {
+            env::remove_var("ENVIRONMENT");
+            env::set_var("API_KEYS", "key_a, key_b, key_c");
+        }
+        let cfg = Config::from_env();
+        let keys = cfg.api_keys.unwrap();
+        assert!(keys.contains("key_a"));
+        assert!(keys.contains("key_b"));
+        assert!(keys.contains("key_c"));
+        unsafe { env::remove_var("API_KEYS"); }
+    }
+
+    #[test]
+    fn empty_api_keys_string_disables_auth() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        unsafe { env::set_var("API_KEYS", "   "); }
+        let cfg = Config::from_env();
+        assert!(!cfg.auth_enabled());
+        unsafe { env::remove_var("API_KEYS"); }
+    }
+
+    #[test]
+    fn custom_port_is_parsed() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        unsafe { env::set_var("PORT", "8080"); }
+        let cfg = Config::from_env();
+        assert_eq!(cfg.port, 8080);
+        unsafe { env::remove_var("PORT"); }
+    }
+
+    #[test]
+    fn max_upload_mb_scales_correctly() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        unsafe { env::set_var("MAX_UPLOAD_MB", "10"); }
+        let cfg = Config::from_env();
+        assert_eq!(cfg.max_upload_bytes, 10 * 1024 * 1024);
+        unsafe { env::remove_var("MAX_UPLOAD_MB"); }
+    }
+}

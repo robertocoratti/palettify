@@ -6,10 +6,13 @@ Built in Rust with OKLab perceptual color matching and Rayon parallelism.
 
 ## How it works
 
-For each pixel:
-1. Convert sRGB → **OKLab** (perceptual color space)
-2. Find the **nearest palette color** via squared Euclidean distance in OKLab
-3. Replace the pixel with that color
+Three algorithms are available — all operate in **OKLab** perceptual color space:
+
+| Algorithm | Flag | Best for |
+|---|---|---|
+| Nearest-color (default) | `nearest` | Pixel art, flat-color images — fully parallel (Rayon) |
+| Floyd-Steinberg dithering | `floyd-steinberg` | Photographs, smooth gradients — sequential, row-by-row |
+| Ordered (Bayer 4×4) dithering | `ordered` | Retro / crosshatch look — fully parallel (Rayon) |
 
 No colorcube precomputation needed — any palette (built-in or custom) works at runtime.
 For small palettes (16–30 colors) brute-force over a cache-friendly Vec beats a KD-tree.
@@ -39,7 +42,7 @@ Server starts on `http://0.0.0.0:3000` by default. Override with `PORT=8080`.
 
 ---
 
-### `GET /api/palettes`
+### `GET /api/v1/palettes`
 
 List all built-in palettes.
 
@@ -57,18 +60,19 @@ List all built-in palettes.
 
 ---
 
-### `POST /api/process`
+### `POST /api/v1/process`
 
 Process an image with a palette.
 
 **Content-Type:** `multipart/form-data`
 
-| Field          | Type   | Required | Description                                               |
-|----------------|--------|----------|-----------------------------------------------------------|
-| `image`        | file   | ✅       | Source image (PNG, JPEG, WebP, BMP, …)                   |
-| `palette_name` | string | ✅ or ↓  | Name of a built-in palette (from `/api/palettes`)         |
-| `palette`      | string | ✅ or ↑  | Newline-separated hex colors (`#RRGGBB`), one per line    |
-| `format`       | string | ❌       | Output format: `png` (default) \| `jpg` \| `webp`        |
+| Field          | Type   | Required | Description                                                              |
+|----------------|--------|----------|--------------------------------------------------------------------------|
+| `image`        | file   | ✅       | Source image (PNG, JPEG, WebP, BMP, …)                                  |
+| `palette_name` | string | ✅ or ↓  | Name of a built-in palette (from `/api/v1/palettes`)                    |
+| `palette`      | string | ✅ or ↑  | Newline-separated hex colors (`#RRGGBB`), one per line                  |
+| `format`       | string | ❌       | Output format: `png` (default) \| `jpg` \| `webp`                       |
+| `algorithm`    | string | ❌       | `nearest` (default) \| `floyd-steinberg` \| `ordered`                   |
 
 **Response:** image binary with `Content-Type: image/png` (or jpg/webp)
 
@@ -76,16 +80,30 @@ Process an image with a palette.
 
 ```bash
 # Built-in palette
-curl -X POST http://localhost:3000/api/process \
+curl -X POST http://localhost:3000/api/v1/process \
   -F "image=@photo.jpg" \
   -F "palette_name=catppuccin-mocha" \
   -F "format=png" \
   --output result.png
 
 # Custom palette (any number of colors)
-curl -X POST http://localhost:3000/api/process \
+curl -X POST http://localhost:3000/api/v1/process \
   -F "image=@photo.jpg" \
   -F $'palette=#ff0000\n#00ff00\n#0000ff\n#ffffff\n#000000' \
+  --output result.png
+
+# Floyd-Steinberg dithering for smooth gradients
+curl -X POST http://localhost:3000/api/v1/process \
+  -F "image=@photo.jpg" \
+  -F "palette_name=nord" \
+  -F "algorithm=floyd-steinberg" \
+  --output result.png
+
+# Ordered (Bayer) dithering for a retro look
+curl -X POST http://localhost:3000/api/v1/process \
+  -F "image=@photo.jpg" \
+  -F "palette_name=gruvbox-dark" \
+  -F "algorithm=ordered" \
   --output result.png
 ```
 

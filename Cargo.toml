@@ -1,6 +1,6 @@
 [package]
 name = "palettify"
-version = "0.2.0"
+version = "0.0.1-alpha"
 edition = "2021"
 description = "High-performance image color palette mapping API"
 authors = ["Roberto Coratti <corattiroberto@gmail.com>"]

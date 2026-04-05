@@ -43,8 +43,8 @@ This is an Axum HTTP API server with two public routes and one protected route:
 
 **Request lifecycle for `POST /api/v1/process`:**
 1. `middleware::authenticate_and_rate_limit` runs first — validates `X-Api-Key` header (when `API_KEYS` is set), then enforces a sliding-window rate limit via Upstash Redis. Both checks are optional in dev (fail-open on missing config).
-2. `api::process` parses the multipart body, resolves the palette (built-in by name or custom hex list), decodes the image, then dispatches to `tokio::task::spawn_blocking` to avoid blocking the async runtime.
-3. `processor::process_image` maps every pixel from sRGB → OKLab, finds the nearest palette color by squared Euclidean distance (brute-force over a Vec, no KD-tree), and returns an `ImageBuffer<Rgb<u8>>`.
+2. `api::process` parses the multipart body (via `api::extract::parse_process_multipart`), resolves the palette (built-in by name or custom hex list), decodes the image, then dispatches to `tokio::task::spawn_blocking` to avoid blocking the async runtime.
+3. `processor::process_image` delegates to `algorithm::Algorithm::run`, which applies the chosen remapping strategy (nearest-color, Floyd-Steinberg dithering, or ordered/Bayer dithering) and returns an `ImageBuffer<Rgb<u8>>`.
 4. The result is encoded to PNG/JPEG/WebP and returned as a binary response.
 
 **Key modules:**
@@ -53,13 +53,15 @@ This is an Axum HTTP API server with two public routes and one protected route:
 - [src/palettes.rs](src/palettes.rs) — embeds the `palettes/*.txt` files at compile time via `include_str!`; `EMBEDDED` is a static slice of `(name, content)` pairs
 - [src/palette.rs](src/palette.rs) — `Palette` struct with `from_hex_list`, `from_content`, and `load_directory`; also exposes OKLab colors as a cached `Vec`
 - [src/color.rs](src/color.rs) — sRGB ↔ OKLab conversion and nearest-color search
-- [src/processor.rs](src/processor.rs) — parallel pixel remapping using Rayon
+- [src/algorithm/](src/algorithm/mod.rs) — `Algorithm` enum (`Nearest` | `FloydSteinberg` | `Ordered`) with `from_str` and `run`; each variant is implemented in its own submodule (`nearest.rs`, `floyd_steinberg.rs`, `ordered.rs`)
+- [src/processor.rs](src/processor.rs) — thin dispatch layer: calls `algorithm.run(img, palette)` inside `spawn_blocking`
+- [src/api/](src/api/mod.rs) — handler modules: `health`, `palettes`, `process`; `extract.rs` parses multipart fields; `output.rs` encodes the result image
 - [src/upstash.rs](src/upstash.rs) — thin HTTP client over the Upstash Redis REST API; uses a Lua `EVAL` script for atomic sliding-window rate limiting
 - [src/error.rs](src/error.rs) — `AppError` enum that implements `IntoResponse` for consistent JSON error bodies
 
 **Palette loading order (startup):** embedded palettes (always) → disk palettes from `PALETTES_DIR` (overlay, can override embedded ones by name).
 
-**Unit tests** live alongside source files using `#[path = "tests/xxx.rs"]` attributes. **Integration tests** live in `tests/` and share helpers from `tests/common/mod.rs` (`test_state`, `test_app`, `make_multipart_body`, `minimal_png`).
+**Unit tests** live inline inside each module (`#[cfg(test)] mod tests { ... }`). **Integration tests** live in `tests/` and share helpers from `tests/common/mod.rs` (`test_state`, `test_app`, `make_multipart_body`, `minimal_png`).
 
 ## Environment Variables
 

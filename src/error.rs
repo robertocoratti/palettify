@@ -50,5 +50,41 @@ impl IntoResponse for AppError {
 }
 
 #[cfg(test)]
-#[path = "tests/error.rs"]
-mod tests;
+mod tests {
+    use super::*;
+    use axum::http::StatusCode;
+    use axum::response::IntoResponse;
+
+    fn status_of(e: AppError) -> StatusCode {
+        let resp = e.into_response();
+        resp.status()
+    }
+
+    #[test]
+    fn bad_request_maps_to_400() {
+        assert_eq!(status_of(AppError::BadRequest("oops".into())), StatusCode::BAD_REQUEST);
+    }
+
+    #[test]
+    fn not_found_maps_to_404() {
+        assert_eq!(status_of(AppError::NotFound("gone".into())), StatusCode::NOT_FOUND);
+    }
+
+    #[test]
+    fn unauthorized_maps_to_401() {
+        assert_eq!(status_of(AppError::Unauthorized), StatusCode::UNAUTHORIZED);
+    }
+
+    #[test]
+    fn too_many_requests_maps_to_429() {
+        assert_eq!(status_of(AppError::TooManyRequests), StatusCode::TOO_MANY_REQUESTS);
+    }
+
+    #[test]
+    fn internal_maps_to_500() {
+        assert_eq!(
+            status_of(AppError::Internal("boom".into())),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        );
+    }
+}

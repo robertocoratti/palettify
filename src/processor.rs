@@ -1,38 +1,48 @@
-use image::{DynamicImage, Rgb, RgbImage};
-use rayon::prelude::*;
+use image::{DynamicImage, RgbImage};
 
-use crate::color::rgb_to_oklab;
+use crate::algorithm::Algorithm;
 use crate::palette::Palette;
 
-/// Remap every pixel in `img` to its nearest color in `palette`.
-///
-/// Each pixel is converted to OKLab, the nearest palette color is found via
-/// squared Euclidean distance, and the result pixel is set to that color's
-/// sRGB values.
-///
-/// Rayon parallelizes the work across all logical CPUs. The pixel Vec is
-/// collected in order so the resulting image is always correct.
-pub fn process_image(img: DynamicImage, palette: &Palette) -> RgbImage {
-    let img = img.to_rgb8();
-    let width = img.width();
-    let height = img.height();
-
-    let pixels: Vec<Rgb<u8>> = img.pixels().cloned().collect();
-
-    let raw: Vec<u8> = pixels
-        .par_iter()
-        .flat_map(|pixel| {
-            let [r, g, b] = pixel.0;
-            let lab = rgb_to_oklab(r, g, b);
-            let nearest = palette.nearest(&lab);
-            [nearest.r, nearest.g, nearest.b]
-        })
-        .collect();
-
-    RgbImage::from_raw(width, height, raw)
-        .expect("pixel buffer size mismatch — this is a bug in process_image")
+/// Remap every pixel in `img` to a color in `palette` using the chosen algorithm.
+pub fn process_image(img: DynamicImage, palette: &Palette, algorithm: Algorithm) -> RgbImage {
+    algorithm.run(img, palette)
 }
 
 #[cfg(test)]
-#[path = "tests/processor.rs"]
-mod tests;
+mod tests {
+    use super::*;
+    use crate::algorithm::Algorithm;
+    use crate::palette::Palette;
+    use image::{DynamicImage, Rgb, RgbImage};
+
+    fn single_pixel_image(r: u8, g: u8, b: u8) -> DynamicImage {
+        let mut img = RgbImage::new(1, 1);
+        img.put_pixel(0, 0, Rgb([r, g, b]));
+        DynamicImage::ImageRgb8(img)
+    }
+
+    #[test]
+    fn maps_red_to_nearest_palette_color() {
+        let palette = Palette::from_hex_list("test", &["#ff0000", "#0000ff"]).unwrap();
+        let img = single_pixel_image(200, 0, 0);
+        let result = process_image(img, &palette, Algorithm::Nearest);
+        assert_eq!(result.get_pixel(0, 0).0, [255, 0, 0]);
+    }
+
+    #[test]
+    fn maps_blue_to_nearest_palette_color() {
+        let palette = Palette::from_hex_list("test", &["#ff0000", "#0000ff"]).unwrap();
+        let img = single_pixel_image(0, 0, 200);
+        let result = process_image(img, &palette, Algorithm::Nearest);
+        assert_eq!(result.get_pixel(0, 0).0, [0, 0, 255]);
+    }
+
+    #[test]
+    fn output_dimensions_match_input() {
+        let palette = Palette::from_hex_list("test", &["#ffffff"]).unwrap();
+        let img = DynamicImage::ImageRgb8(RgbImage::new(100, 80));
+        let result = process_image(img, &palette, Algorithm::Nearest);
+        assert_eq!(result.width(), 100);
+        assert_eq!(result.height(), 80);
+    }
+}
