@@ -18,3 +18,10 @@ Thumbs.db
 *.png
 *.jpg
 *.webp
+
+# Coverage reports
+*.lcov
+lcov.info
+
+# Claude Code local settings
+.claude/
