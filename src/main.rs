@@ -1,6 +1,5 @@
 use axum::{extract::DefaultBodyLimit, routing::{get, post}, Router};
-use std::{net::SocketAddr, sync::Arc, time::Duration};
-use tower_governor::{governor::GovernorConfigBuilder, GovernorLayer};
+use std::net::SocketAddr;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
@@ -13,6 +12,7 @@ mod palette;
 mod palettes;
 mod processor;
 mod state;
+mod upstash;
 
 #[tokio::main]
 async fn main() {
@@ -34,50 +34,39 @@ async fn main() {
         .with(log_format)
         .init();
 
-    let state = state::AppState::new(config.clone());
-
-    // Build the rate limiter for POST /api/v1/process.
-    // Uses a token-bucket algorithm keyed by client IP (SmartIpKeyExtractor checks
-    // X-Forwarded-For first, so it works correctly behind Fly.io's proxy).
-    // use_headers() adds X-RateLimit-* and Retry-After headers to every response.
-    let process_governor = Arc::new(
-        GovernorConfigBuilder::default()
-            .per_second(config.process_rps.into())
-            .burst_size(config.process_burst)
-            .use_headers()
-            .finish()
-            .expect("PROCESS_RPS and PROCESS_BURST must be greater than 0"),
-    );
-
-    // Spawn a background task that prunes stale entries from the limiter's
-    // in-memory map every 60 seconds to prevent unbounded memory growth.
-    let limiter = process_governor.limiter().clone();
-    tokio::spawn(async move {
-        let mut interval = tokio::time::interval(Duration::from_secs(60));
-        loop {
-            interval.tick().await;
-            limiter.retain_recent();
-            tracing::debug!("rate limiter pruned; active keys: {}", limiter.len());
+    // Build the Upstash REST client if credentials are present.
+    // No TCP connection is made at startup — the first request will verify
+    // reachability. A missing URL is not an error; rate limiting and usage
+    // tracking are simply disabled (useful for local development).
+    let redis = match (&config.upstash_rest_url, &config.upstash_rest_token) {
+        (Some(url), Some(token)) => {
+            tracing::info!(
+                requests    = config.rate_limit_requests,
+                window_secs = config.rate_limit_window_secs,
+                "Upstash configured — rate limiting and usage tracking enabled",
+            );
+            Some(upstash::UpstashClient::new(url.clone(), token.clone()))
         }
-    });
+        _ => {
+            tracing::warn!(
+                "UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN not set \
+                 — rate limiting and usage tracking disabled"
+            );
+            None
+        }
+    };
 
-    tracing::info!(
-        rps = config.process_rps,
-        burst = config.process_burst,
-        "rate limiter configured",
-    );
+    let state = state::AppState::new(config, redis);
+    let port  = state.config.port;
 
-    // Routes that require a valid API key are nested under a middleware layer.
-    // Public routes (health, palettes list) bypass authentication entirely.
-    // GovernorLayer is the outermost wrapper so rate limiting runs before auth,
-    // which prevents brute-force key enumeration.
+    // Protected routes: authentication + rate limiting + usage tracking run
+    // as a single middleware layer before the handler.
     let protected = Router::new()
         .route("/api/v1/process", post(api::process))
         .layer(axum::middleware::from_fn_with_state(
             state.clone(),
-            middleware::require_api_key,
-        ))
-        .layer(GovernorLayer { config: process_governor });
+            middleware::authenticate_and_rate_limit,
+        ));
 
     let app = Router::new()
         .route("/health", get(api::health))
@@ -88,7 +77,7 @@ async fn main() {
         .layer(TraceLayer::new_for_http())
         .layer(CorsLayer::permissive());
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
     tracing::info!("palettify v{} listening on {}", env!("CARGO_PKG_VERSION"), addr);
 
     let listener = tokio::net::TcpListener::bind(addr)

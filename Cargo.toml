@@ -19,9 +19,9 @@ rayon    = "1"
 
 axum          = { version = "0.7", features = ["multipart"] }
 tokio         = { version = "1",   features = ["full"] }
-tower          = { version = "0.4" }
-tower-http     = { version = "0.5", features = ["cors", "trace"] }
-tower_governor = { version = "0.4", features = ["axum"] }
+tower      = { version = "0.4" }
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+reqwest    = { version = "0.12", features = ["json"] }
 
 serde         = { version = "1", features = ["derive"] }
 serde_json    = "1"
@@ -30,7 +30,6 @@ thiserror           = "1"
 tracing             = "0.1"
 tracing-subscriber  = { version = "0.3", features = ["env-filter", "fmt"] }
 dotenvy             = "0.15"
-uuid                = { version = "1", features = ["v4"] }
 
 [dev-dependencies]
 tower = { version = "0.4", features = ["util"] }

@@ -16,6 +16,9 @@ pub enum AppError {
     #[error("missing or invalid API key")]
     Unauthorized,
 
+    #[error("rate limit exceeded")]
+    TooManyRequests,
+
     #[error("{0}")]
     Internal(String),
 }
@@ -28,6 +31,10 @@ impl IntoResponse for AppError {
             AppError::Unauthorized => (
                 StatusCode::UNAUTHORIZED,
                 "missing or invalid API key".to_string(),
+            ),
+            AppError::TooManyRequests => (
+                StatusCode::TOO_MANY_REQUESTS,
+                "rate limit exceeded — slow down and retry".to_string(),
             ),
             AppError::Internal(msg) => {
                 tracing::error!("{}", msg);

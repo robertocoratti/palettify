@@ -31,11 +31,14 @@ pub fn test_state(api_keys: Option<Vec<&str>>) -> SharedState {
         palettes_dir: None,
         api_keys,
         max_upload_bytes: 10 * 1024 * 1024,
-        process_rps: 2,
-        process_burst: 5,
+        upstash_rest_url: None,
+        upstash_rest_token: None,
+        rate_limit_requests: 60,
+        rate_limit_window_secs: 60,
     };
 
-    AppState::new(config)
+    // No Redis in tests — rate limiting and usage tracking are disabled.
+    AppState::new(config, None)
 }
 
 /// Build a Router wired identically to main.rs but without a TCP listener.
@@ -47,7 +50,7 @@ pub fn test_app(state: SharedState) -> Router {
         .route("/api/v1/process", post(api::process))
         .layer(middleware::from_fn_with_state(
             state.clone(),
-            mw::require_api_key,
+            mw::authenticate_and_rate_limit,
         ));
 
     Router::new()

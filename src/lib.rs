@@ -7,3 +7,4 @@ pub mod palette;
 pub mod palettes;
 pub mod processor;
 pub mod state;
+pub mod upstash;
