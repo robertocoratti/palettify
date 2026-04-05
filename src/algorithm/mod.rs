@@ -27,10 +27,14 @@ impl Algorithm {
     /// appropriate error with context.
     pub fn from_str(s: &str) -> Option<Self> {
         match s.trim().to_lowercase().as_str() {
-            "nearest" | "" => Some(Self::Nearest),
-            "floyd-steinberg" | "dither" | "diffusion" => Some(Self::FloydSteinberg),
-            "ordered" | "bayer" => Some(Self::Ordered),
-            _ => None,
+            "nearest"         => Some(Self::Nearest),
+            ""                => Some(Self::Nearest),
+            "floyd-steinberg" => Some(Self::FloydSteinberg),
+            "dither"          => Some(Self::FloydSteinberg),
+            "diffusion"       => Some(Self::FloydSteinberg),
+            "ordered"         => Some(Self::Ordered),
+            "bayer"           => Some(Self::Ordered),
+            _                 => None,
         }
     }
 

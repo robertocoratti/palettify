@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:upstash.com)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(cargo check:*)",
+      "Bash(cargo test:*)",
+      "Bash(cargo update:*)",
+      "Bash(taskkill /F /IM palettify.exe /T)",
+      "Bash(tasklist)",
+      "Bash(cmd /c \"taskkill /F /IM palettify.exe\")",
+      "Bash(cmd /c \"taskkill /F /PID $\\(tasklist)",
+      "Bash(xargs grep:*)"
+    ]
+  }
+}

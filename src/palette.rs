@@ -227,4 +227,91 @@ mod tests {
         let p = Palette::from_hex_list("t", &["#000000", "#ffffff", "#ff0000"]).unwrap();
         assert_eq!(p.color_count(), 3);
     }
+
+    // ── from_file ───────────────────────────────────────────────────────────
+
+    #[test]
+    fn from_file_loads_valid_palette() {
+        use std::io::Write;
+        let dir  = std::env::temp_dir();
+        let path = dir.join("palettify_test_from_file.txt");
+        let mut f = std::fs::File::create(&path).unwrap();
+        writeln!(f, "# Test palette").unwrap();
+        writeln!(f, "#ff0000").unwrap();
+        writeln!(f, "#00ff00").unwrap();
+        writeln!(f, "#0000ff").unwrap();
+        drop(f);
+
+        let p = Palette::from_file(&path).unwrap();
+        assert_eq!(p.name, "palettify_test_from_file");
+        assert_eq!(p.colors.len(), 3);
+
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn from_file_returns_error_for_missing_file() {
+        let path = std::path::Path::new("/nonexistent/palettify/palette.txt");
+        assert!(Palette::from_file(path).is_err());
+    }
+
+    // ── load_directory ──────────────────────────────────────────────────────
+
+    #[test]
+    fn load_directory_loads_txt_files() {
+        use std::io::Write;
+        let dir = std::env::temp_dir().join("palettify_test_load_dir");
+        std::fs::create_dir_all(&dir).unwrap();
+
+        let path = dir.join("mypalette.txt");
+        let mut f = std::fs::File::create(&path).unwrap();
+        writeln!(f, "#ff0000\n#00ff00\n#0000ff").unwrap();
+        drop(f);
+
+        let map = Palette::load_directory(&dir);
+        assert!(map.contains_key("mypalette"));
+
+        let _ = std::fs::remove_file(&path);
+        let _ = std::fs::remove_dir(&dir);
+    }
+
+    #[test]
+    fn load_directory_skips_non_txt_files() {
+        let dir = std::env::temp_dir().join("palettify_test_non_txt");
+        std::fs::create_dir_all(&dir).unwrap();
+
+        let path = dir.join("palette.json");
+        std::fs::File::create(&path).unwrap();
+
+        let map = Palette::load_directory(&dir);
+        assert!(map.is_empty());
+
+        let _ = std::fs::remove_file(&path);
+        let _ = std::fs::remove_dir(&dir);
+    }
+
+    #[test]
+    fn load_directory_handles_nonexistent_dir() {
+        let dir = std::path::Path::new("/nonexistent/palettify/dir");
+        let map = Palette::load_directory(dir);
+        assert!(map.is_empty());
+    }
+
+    #[test]
+    fn load_directory_skips_invalid_palette_files() {
+        use std::io::Write;
+        let dir = std::env::temp_dir().join("palettify_test_invalid_palette");
+        std::fs::create_dir_all(&dir).unwrap();
+
+        let path = dir.join("bad.txt");
+        let mut f = std::fs::File::create(&path).unwrap();
+        writeln!(f, "# only comments, no colors").unwrap();
+        drop(f);
+
+        let map = Palette::load_directory(&dir);
+        assert!(map.is_empty());
+
+        let _ = std::fs::remove_file(&path);
+        let _ = std::fs::remove_dir(&dir);
+    }
 }

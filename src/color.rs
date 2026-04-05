@@ -95,6 +95,16 @@ mod tests {
     }
 
     #[test]
+    fn parse_hex_rejects_invalid_second_byte() {
+        assert_eq!(parse_hex("#00zz00"), None);
+    }
+
+    #[test]
+    fn parse_hex_rejects_invalid_third_byte() {
+        assert_eq!(parse_hex("#0000zz"), None);
+    }
+
+    #[test]
     fn black_has_zero_lightness() {
         let [l, _, _] = rgb_to_oklab(0, 0, 0);
         assert!(l < 0.001, "expected L near 0, got {l}");

@@ -68,17 +68,21 @@ pub async fn authenticate_and_rate_limit(
 
         // ── 4. Usage tracking (fire-and-forget) ──────────────────────────────
         if let Some(key) = api_key.clone() {
-            let client    = upstash.clone();
-            let usage_key = format!("usage:{key}:{}", current_month());
-            tokio::spawn(async move {
-                if let Err(e) = client.track_usage(&usage_key, 60 * 60 * 24 * 93).await {
-                    tracing::warn!(%key, "usage tracking failed: {e}");
-                }
-            });
+            let client = upstash.clone();
+            tokio::spawn(track_usage_async(client, key));
         }
     }
 
     Ok(next.run(request).await)
+}
+
+/// Increments the monthly usage counter for an API key. Designed to be called
+/// inside `tokio::spawn` (fire-and-forget) so a failure never blocks requests.
+async fn track_usage_async(client: crate::upstash::UpstashClient, key: String) {
+    let usage_key = format!("usage:{key}:{}", current_month());
+    if let Err(e) = client.track_usage(&usage_key, 60 * 60 * 24 * 93).await {
+        tracing::warn!(%key, "usage tracking failed: {e}");
+    }
 }
 
 /// Extract the real client IP from proxy headers.
@@ -115,4 +119,69 @@ fn current_month() -> String {
     let y    = if m <= 2 { y + 1 } else { y };
 
     format!("{y:04}-{m:02}")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::{body::Body, http::Request};
+
+    fn req(headers: &[(&str, &str)]) -> Request<Body> {
+        let mut b = Request::builder();
+        for (k, v) in headers {
+            b = b.header(*k, *v);
+        }
+        b.body(Body::empty()).unwrap()
+    }
+
+    // ── extract_ip ──────────────────────────────────────────────────────────
+
+    #[test]
+    fn extract_ip_uses_fly_client_ip() {
+        assert_eq!(extract_ip(&req(&[("fly-client-ip", "1.2.3.4")])), "1.2.3.4");
+    }
+
+    #[test]
+    fn extract_ip_falls_back_to_x_forwarded_for() {
+        assert_eq!(
+            extract_ip(&req(&[("x-forwarded-for", "5.6.7.8, 1.1.1.1")])),
+            "5.6.7.8",
+        );
+    }
+
+    #[test]
+    fn extract_ip_falls_back_to_x_real_ip() {
+        assert_eq!(extract_ip(&req(&[("x-real-ip", "9.10.11.12")])), "9.10.11.12");
+    }
+
+    #[test]
+    fn extract_ip_unknown_without_headers() {
+        assert_eq!(extract_ip(&req(&[])), "unknown");
+    }
+
+    // ── current_month ───────────────────────────────────────────────────────
+
+    #[test]
+    fn current_month_has_yyyy_mm_format() {
+        let m = current_month();
+        assert_eq!(m.len(), 7, "expected YYYY-MM format");
+        assert_eq!(&m[4..5], "-");
+        let year: u32  = m[..4].parse().expect("year must be numeric");
+        let month: u32 = m[5..].parse().expect("month must be numeric");
+        assert!(year >= 2024);
+        assert!((1..=12).contains(&month));
+    }
+
+    // ── track_usage_async (fire-and-forget error path) ──────────────────────
+
+    #[tokio::test]
+    async fn track_usage_async_logs_and_ignores_error() {
+        // Bad URL → connection refused → Err → warn log (line 76 of original)
+        let client = crate::upstash::UpstashClient::new(
+            "http://127.0.0.1:19997".to_string(),
+            "test-token".to_string(),
+        );
+        // Must not panic; the error is logged and swallowed.
+        track_usage_async(client, "test-key".to_string()).await;
+    }
 }

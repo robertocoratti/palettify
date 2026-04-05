@@ -122,4 +122,11 @@ mod tests {
         let resp = build_image_response(img, OutputFormat::Jpeg).unwrap();
         assert_eq!(resp.headers().get("content-type").unwrap(), "image/jpeg");
     }
+
+    #[test]
+    fn build_response_sets_content_type_webp() {
+        let img = RgbImage::from_pixel(1, 1, Rgb([0u8, 0, 255]));
+        let resp = build_image_response(img, OutputFormat::WebP).unwrap();
+        assert_eq!(resp.headers().get("content-type").unwrap(), "image/webp");
+    }
 }

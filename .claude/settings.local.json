@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:upstash.com)",
+      "Bash(cargo llvm-cov:*)",
+      "Bash(python3 -c ':*)",
+      "Bash(python3 -c \" import re with open\\('coverage2.lcov'\\) as f: content = f.read\\(\\) files = content.split\\('SF:'\\) for section in files[1:]: fname = section.split\\('\\\\n'\\)[0].strip\\(\\) if 'main.rs' in fname: continue missed = [] for line in section.split\\('\\\\n'\\): if line.startswith\\('DA:'\\): parts = line[3:].split\\(','\\) lineno, count = int\\(parts[0]\\), int\\(parts[1]\\) if count == 0: missed.append\\(lineno\\) if missed: short = fname.split\\('palettify'\\)[-1].lstrip\\('/\\\\\\\\\\\\\\\\'\\) print\\(f'{short}: missed {missed}'\\) \")",
+      "Bash(python3 -c \" with open\\('coverage3.lcov'\\) as f: content = f.read\\(\\) for section in content.split\\('SF:'\\)[1:]: fname = section.split\\('\\\\n'\\)[0].strip\\(\\) if 'main.rs' in fname: continue missed = [int\\(l[3:].split\\(','\\)[0]\\) for l in section.split\\('\\\\n'\\) if l.startswith\\('DA:'\\) and l[3:].split\\(','\\)[1].strip\\(\\) == '0'] if missed: print\\(fname.split\\('src'\\)[-1] + ': ' + str\\(missed\\)\\) \")",
+      "Bash(python3 -c \" with open\\('coverage4.lcov'\\) as f: content = f.read\\(\\) missed_total = 0 for section in content.split\\('SF:'\\)[1:]: fname = section.split\\('\\\\n'\\)[0].strip\\(\\) if 'main.rs' in fname: continue missed = [int\\(l[3:].split\\(','\\)[0]\\) for l in section.split\\('\\\\n'\\) if l.startswith\\('DA:'\\) and l[3:].split\\(','\\)[1].strip\\(\\) == '0'] missed_total += len\\(missed\\) if missed: print\\(fname.split\\('src'\\)[-1] + ': ' + str\\(missed\\)\\) print\\('Total missed lines:', missed_total\\) \")"
+    ]
+  }
+}

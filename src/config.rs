@@ -202,4 +202,59 @@ mod tests {
         assert_eq!(cfg.max_upload_bytes, 10 * 1024 * 1024);
         unsafe { env::remove_var("MAX_UPLOAD_MB"); }
     }
+
+    #[test]
+    fn environment_default_is_development() {
+        assert_eq!(Environment::default(), Environment::Development);
+    }
+
+    #[test]
+    fn prod_alias_for_production() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        unsafe { env::set_var("ENVIRONMENT", "prod"); }
+        let cfg = Config::from_env();
+        assert!(cfg.is_production());
+        unsafe { env::remove_var("ENVIRONMENT"); }
+    }
+
+    #[test]
+    fn upstash_env_vars_are_parsed() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        unsafe {
+            env::set_var("UPSTASH_REDIS_REST_URL",   "https://example.upstash.io");
+            env::set_var("UPSTASH_REDIS_REST_TOKEN", "mytoken");
+        }
+        let cfg = Config::from_env();
+        assert_eq!(cfg.upstash_rest_url.as_deref(),   Some("https://example.upstash.io"));
+        assert_eq!(cfg.upstash_rest_token.as_deref(), Some("mytoken"));
+        unsafe {
+            env::remove_var("UPSTASH_REDIS_REST_URL");
+            env::remove_var("UPSTASH_REDIS_REST_TOKEN");
+        }
+    }
+
+    #[test]
+    fn rate_limit_env_vars_are_parsed() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        unsafe {
+            env::set_var("RATE_LIMIT_REQUESTS",    "30");
+            env::set_var("RATE_LIMIT_WINDOW_SECS", "120");
+        }
+        let cfg = Config::from_env();
+        assert_eq!(cfg.rate_limit_requests,    30);
+        assert_eq!(cfg.rate_limit_window_secs, 120);
+        unsafe {
+            env::remove_var("RATE_LIMIT_REQUESTS");
+            env::remove_var("RATE_LIMIT_WINDOW_SECS");
+        }
+    }
+
+    #[test]
+    fn palettes_dir_nonexistent_path_is_none() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        unsafe { env::set_var("PALETTES_DIR", "/nonexistent/palettify/path"); }
+        let cfg = Config::from_env();
+        assert!(cfg.palettes_dir.is_none());
+        unsafe { env::remove_var("PALETTES_DIR"); }
+    }
 }

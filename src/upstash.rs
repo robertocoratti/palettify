@@ -116,3 +116,91 @@ fn unix_secs() -> u64 {
         .unwrap()
         .as_secs()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::{extract::State, routing::post, Json, Router};
+    use serde_json::{json, Value};
+    use std::sync::{Arc, Mutex};
+
+    // ── Mock Upstash REST server ─────────────────────────────────────────────
+
+    /// Starts a tiny axum server that mimics the Upstash REST API.
+    /// `initial_count` is the value returned before the first INCR increment.
+    /// Returns the base URL of the server.
+    async fn start_mock(initial_count: i64) -> String {
+        let counter = Arc::new(Mutex::new(initial_count));
+
+        async fn incr_handler(
+            State(counter): State<Arc<Mutex<i64>>>,
+            Json(_cmd): Json<Value>,
+        ) -> Json<Value> {
+            let mut c = counter.lock().unwrap();
+            *c += 1;
+            Json(json!({ "result": *c }))
+        }
+
+        async fn pipeline_handler(Json(_cmds): Json<Value>) -> Json<Value> {
+            Json(json!([{ "result": 1 }, { "result": 1 }]))
+        }
+
+        let app = Router::new()
+            .route("/",         post(incr_handler))
+            .route("/pipeline", post(pipeline_handler))
+            .with_state(counter);
+
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+
+        format!("http://127.0.0.1:{}", addr.port())
+    }
+
+    // ── check_rate_limit ────────────────────────────────────────────────────
+
+    #[tokio::test]
+    async fn check_rate_limit_allows_first_request() {
+        // Counter starts at 0 → INCR returns 1 → 1 ≤ 10 → allowed.
+        // count == 1 also triggers the EXPIRE fire-and-forget spawn.
+        let url = start_mock(0).await;
+        let client = UpstashClient::new(url, "tok".into());
+        let ok = client.check_rate_limit("id", 10, 60).await.unwrap();
+        // Give the EXPIRE spawn a chance to run (exercises the async block).
+        tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+        assert!(ok);
+    }
+
+    #[tokio::test]
+    async fn check_rate_limit_allows_non_first_request() {
+        // Counter starts at 1 → INCR returns 2 → no EXPIRE spawn, still allowed.
+        let url = start_mock(1).await;
+        let client = UpstashClient::new(url, "tok".into());
+        let ok = client.check_rate_limit("id", 10, 60).await.unwrap();
+        assert!(ok);
+    }
+
+    #[tokio::test]
+    async fn check_rate_limit_blocks_when_exceeded() {
+        // Counter starts at 10 → INCR returns 11 → 11 > 10 → blocked.
+        let url = start_mock(10).await;
+        let client = UpstashClient::new(url, "tok".into());
+        let blocked = client.check_rate_limit("id", 10, 60).await.unwrap();
+        assert!(!blocked);
+    }
+
+    #[tokio::test]
+    async fn check_rate_limit_returns_err_on_connection_failure() {
+        let client = UpstashClient::new("http://127.0.0.1:19996".into(), "tok".into());
+        assert!(client.check_rate_limit("id", 10, 60).await.is_err());
+    }
+
+    // ── track_usage ─────────────────────────────────────────────────────────
+
+    #[tokio::test]
+    async fn track_usage_succeeds() {
+        let url = start_mock(0).await;
+        let client = UpstashClient::new(url, "tok".into());
+        client.track_usage("usage:key:2024-01", 60 * 60 * 24 * 90).await.unwrap();
+    }
+}
