@@ -1,0 +1,16 @@
+name: rose-pine
+description: All natural pine, faux fur and a bit of soho vibes for the classy minimalist
+url: https://rosepinetheme.com
+colors:
+  - base: "#191724"
+  - surface: "#1f1d2e"
+  - overlay: "#26233a"
+  - muted: "#6e6a86"
+  - subtle: "#908caa"
+  - text: "#e0def4"
+  - pine: "#31748f"
+  - foam: "#9ccfd8"
+  - iris: "#c4a7e7"
+  - rose: "#ebbcba"
+  - love: "#eb6f92"
+  - gold: "#f6c177"

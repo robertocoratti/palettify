@@ -91,9 +91,9 @@ async fn each_palette_entry_has_required_fields() {
 // Library-level palette tests (no server)
 
 #[test]
-fn palette_from_content_ignores_comments_and_blank_lines() {
-    let content = "# Nord palette\n\n#2e3440\n#3b4252\n";
-    let p = Palette::from_content("nord", content).unwrap();
+fn palette_from_yaml_parses_colors() {
+    let yaml = "name: nord\ncolors:\n  - '#2e3440'\n  - '#3b4252'\n";
+    let p = palettify::palette::Palette::from_yaml(yaml).unwrap();
     assert_eq!(p.color_count(), 2);
 }
 

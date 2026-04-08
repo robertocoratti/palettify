@@ -47,9 +47,19 @@ async fn start_mock(initial_count: i64) -> String {
     format!("http://127.0.0.1:{port}")
 }
 
-// ── Tests ────────────────────────────────────────────────────────────────────
+// ── Helper ────────────────────────────────────────────────────────────────────
 
-/// Middleware passes the request when the rate limit is not exceeded.
+fn header_str<'a>(resp: &'a axum::response::Response, name: &str) -> &'a str {
+    resp.headers()
+        .get(name)
+        .expect(&format!("{name} header must be present"))
+        .to_str()
+        .unwrap()
+}
+
+// ── Tests ─────────────────────────────────────────────────────────────────────
+
+/// Middleware passes the request and attaches X-RateLimit-* headers.
 #[tokio::test]
 async fn request_is_allowed_within_rate_limit() {
     let url = start_mock(0).await; // INCR → 1, limit = 10 → allowed
@@ -69,9 +79,14 @@ async fn request_is_allowed_within_rate_limit() {
         .unwrap();
 
     assert_eq!(resp.status(), StatusCode::OK);
+    assert_eq!(header_str(&resp, "x-ratelimit-limit"),     "10");
+    assert_eq!(header_str(&resp, "x-ratelimit-remaining"), "9"); // 10 - 1
+    // Reset is a unix timestamp in the future; just verify it's numeric and > 0.
+    let reset: u64 = header_str(&resp, "x-ratelimit-reset").parse().unwrap();
+    assert!(reset > 0);
 }
 
-/// Middleware returns 429 when the rate limit is exceeded.
+/// Middleware returns 429 with X-RateLimit-* headers when the limit is exceeded.
 #[tokio::test]
 async fn request_is_blocked_when_rate_limit_exceeded() {
     let url = start_mock(10).await; // INCR → 11, limit = 10 → blocked
@@ -89,9 +104,13 @@ async fn request_is_blocked_when_rate_limit_exceeded() {
         .unwrap();
 
     assert_eq!(resp.status(), StatusCode::TOO_MANY_REQUESTS);
+    assert_eq!(header_str(&resp, "x-ratelimit-limit"),     "10");
+    assert_eq!(header_str(&resp, "x-ratelimit-remaining"), "0"); // clamped
+    let reset: u64 = header_str(&resp, "x-ratelimit-reset").parse().unwrap();
+    assert!(reset > 0);
 }
 
-/// Middleware fails open when Upstash is unreachable (request is not blocked).
+/// Middleware fails open when Upstash is unreachable — no rate-limit headers.
 #[tokio::test]
 async fn request_is_allowed_when_upstash_unreachable() {
     let bad_url = "http://127.0.0.1:19995"; // nothing listening
@@ -110,15 +129,16 @@ async fn request_is_allowed_when_upstash_unreachable() {
         .await
         .unwrap();
 
-    // Fail-open: the request must not be rejected with 429.
+    // Fail-open: must not be rejected with 429.
     assert_ne!(resp.status(), StatusCode::TOO_MANY_REQUESTS);
+    // No Upstash info → no rate-limit headers.
+    assert!(resp.headers().get("x-ratelimit-limit").is_none());
 }
 
 /// When auth is disabled but an API key header is supplied, usage tracking fires.
 #[tokio::test]
 async fn usage_tracking_fires_when_api_key_header_is_present() {
     let url = start_mock(0).await;
-    // Auth disabled (no api_keys configured) but x-api-key is sent anyway.
     let app = test_app(test_state_with_redis(None, &url));
     let (ct, body) = make_multipart_body(&minimal_png(), Some("nord"), None);
 
@@ -139,6 +159,8 @@ async fn usage_tracking_fires_when_api_key_header_is_present() {
     tokio::time::sleep(std::time::Duration::from_millis(30)).await;
 
     assert_eq!(resp.status(), StatusCode::OK);
+    // Rate-limit headers must be present.
+    assert!(resp.headers().contains_key("x-ratelimit-limit"));
 }
 
 /// Rate-limit identity uses the API key (not IP) when a key is provided.
@@ -162,4 +184,7 @@ async fn rate_limit_uses_key_identity_when_auth_enabled() {
         .unwrap();
 
     assert_eq!(resp.status(), StatusCode::OK);
+    assert!(resp.headers().contains_key("x-ratelimit-limit"));
+    assert!(resp.headers().contains_key("x-ratelimit-remaining"));
+    assert!(resp.headers().contains_key("x-ratelimit-reset"));
 }

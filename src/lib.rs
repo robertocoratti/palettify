@@ -5,7 +5,7 @@ pub mod config;
 pub mod error;
 pub mod middleware;
 pub mod palette;
-pub mod palettes;
 pub mod processor;
+pub mod router;
 pub mod state;
 pub mod upstash;

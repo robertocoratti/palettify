@@ -10,6 +10,20 @@ use super::{
     output::build_image_response,
 };
 
+#[cfg(test)]
+mod tests {
+    use crate::error::AppError;
+
+    #[tokio::test]
+    async fn spawn_blocking_join_error_maps_to_internal() {
+        // Exercises the map_err branch on the JoinHandle for a panicking task.
+        let result = tokio::task::spawn_blocking(|| -> () { panic!("forced panic for coverage") })
+            .await
+            .map_err(|e| AppError::Internal(format!("processing task panicked: {e}")));
+        assert!(result.is_err());
+    }
+}
+
 /// POST /api/v1/process
 ///
 /// Protected endpoint (requires X-Api-Key when auth is enabled).

@@ -1,0 +1,26 @@
+name: gruvbox-light
+description: Retro groove color scheme — light variant
+url: https://github.com/morhetz/gruvbox
+colors:
+  - bg: "#fbf1c7"
+  - bg-hard: "#f2e5bc"
+  - bg1: "#ebdbb2"
+  - bg2: "#d5c4a1"
+  - bg3: "#bdae93"
+  - bg4: "#a89984"
+  - gray: "#928374"
+  - fg4: "#7c6f64"
+  - fg1: "#3c3836"
+  - fg0-hard: "#1d2021"
+  - dark-red: "#9d0006"
+  - dark-green: "#79740e"
+  - dark-yellow: "#b57614"
+  - dark-blue: "#076678"
+  - dark-purple: "#8f3f71"
+  - dark-aqua: "#427b58"
+  - bright-red: "#cc241d"
+  - bright-green: "#98971a"
+  - bright-yellow: "#d79921"
+  - bright-blue: "#458588"
+  - bright-purple: "#b16286"
+  - bright-aqua: "#689d6a"

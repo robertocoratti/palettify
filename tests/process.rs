@@ -320,3 +320,113 @@ async fn process_response_includes_content_disposition() {
         "response should include Content-Disposition header",
     );
 }
+
+// ── multipart field read errors (non-UTF-8 content) ─────────────────────────
+
+fn multipart_with_invalid_utf8_field(field_name: &str) -> (String, Vec<u8>) {
+    let boundary = "boundary-utf8-error";
+    let png = minimal_png();
+    let mut body = Vec::new();
+    let push = |b: &mut Vec<u8>, s: &str| b.extend_from_slice(s.as_bytes());
+
+    // Always include a valid image field.
+    push(&mut body, &format!("--{boundary}\r\n"));
+    push(&mut body, "Content-Disposition: form-data; name=\"image\"; filename=\"t.png\"\r\n");
+    push(&mut body, "Content-Type: image/png\r\n\r\n");
+    body.extend_from_slice(&png);
+    push(&mut body, "\r\n");
+
+    // Inject the target field with bytes that are not valid UTF-8.
+    push(&mut body, &format!("--{boundary}\r\n"));
+    push(&mut body, &format!("Content-Disposition: form-data; name=\"{field_name}\"\r\n\r\n"));
+    body.extend_from_slice(&[0xFF, 0xFE, 0x00]); // invalid UTF-8
+    push(&mut body, "\r\n");
+
+    push(&mut body, &format!("--{boundary}--\r\n"));
+    (format!("multipart/form-data; boundary={boundary}"), body)
+}
+
+#[tokio::test]
+async fn process_with_garbage_palette_name_returns_client_error() {
+    // axum multipart reads bytes lossily — the garbage palette name will not be
+    // found in the palette map, resulting in a 404 client error.
+    let app = test_app(test_state(None));
+    let (ct, body) = multipart_with_invalid_utf8_field("palette_name");
+    let resp = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri("/api/v1/process")
+                .header("Content-Type", ct)
+                .body(Body::from(body))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert!(resp.status().is_client_error());
+}
+
+#[tokio::test]
+async fn process_with_invalid_utf8_algorithm_returns_400() {
+    let app = test_app(test_state(None));
+    let (ct, body) = multipart_with_invalid_utf8_field("algorithm");
+    let resp = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri("/api/v1/process")
+                .header("Content-Type", ct)
+                .body(Body::from(body))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    // Without a palette the request may be rejected for a different reason (400);
+    // the important thing is it does not panic and returns a client error.
+    assert!(resp.status().is_client_error());
+}
+
+#[tokio::test]
+async fn process_with_invalid_utf8_palette_field_returns_400() {
+    let app = test_app(test_state(None));
+    let (ct, body) = multipart_with_invalid_utf8_field("palette");
+    let resp = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri("/api/v1/process")
+                .header("Content-Type", ct)
+                .body(Body::from(body))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert!(resp.status().is_client_error());
+}
+
+// ── custom palette with empty lines (exercises the filter closure) ───────────
+
+#[tokio::test]
+async fn process_with_palette_containing_empty_lines_returns_200() {
+    let app = test_app(test_state(None));
+    // Palette with leading/trailing blank lines; filter(|l| !l.is_empty()) must strip them.
+    let (ct, body) = make_multipart_full(
+        &minimal_png(),
+        None,
+        Some("\n#ff0000\n\n#00ff00\n"),
+        None,
+        None,
+    );
+    let resp = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri("/api/v1/process")
+                .header("Content-Type", ct)
+                .body(Body::from(body))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), StatusCode::OK);
+}

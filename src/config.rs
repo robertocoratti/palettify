@@ -25,8 +25,10 @@ pub struct Config {
     /// Runtime environment. Controls log format and error detail verbosity.
     pub environment: Environment,
 
-    /// Directory containing .txt palette files loaded at startup.
-    /// If None or the path does not exist, only embedded palettes are used.
+    /// Optional directory of extra `.yaml` palette files loaded at startup.
+    /// These are merged on top of the built-in palettes loaded from `./palettes/`
+    /// and can add new palettes or override existing ones by name.
+    /// If None or the path does not exist, only the built-in directory is used.
     pub palettes_dir: Option<PathBuf>,
 
     /// Accepted API keys for the X-Api-Key header.

@@ -10,6 +10,18 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use serde::Deserialize;
 use serde_json::{json, Value};
 
+/// Result of a rate-limit check, used by the middleware to populate
+/// `X-RateLimit-*` response headers.
+#[derive(Debug, Clone)]
+pub struct RateLimitInfo {
+    /// Whether the request is within the allowed limit.
+    pub allowed: bool,
+    /// Current request count in this window (after incrementing).
+    pub count: i64,
+    /// Unix timestamp at which the current window expires and the counter resets.
+    pub window_reset: u64,
+}
+
 #[derive(Clone)]
 pub struct UpstashClient {
     http:  reqwest::Client,
@@ -66,17 +78,19 @@ impl UpstashClient {
     /// every `window_secs` seconds. TTL is set fire-and-forget on the first
     /// increment so the key is cleaned up automatically.
     ///
-    /// Returns `Ok(true)` if the request is allowed, `Ok(false)` if the limit
-    /// is exceeded. On network/parse error returns `Err` — callers must
-    /// fail open so a Redis outage never takes down the API.
+    /// Returns `Ok(RateLimitInfo)` with the check result and counters that
+    /// callers use to populate `X-RateLimit-*` response headers.
+    /// On network/parse error returns `Err` — callers must fail open so a
+    /// Redis outage never takes down the API.
     pub async fn check_rate_limit(
         &self,
         identifier:  &str,
         limit:       u64,
         window_secs: u64,
-    ) -> Result<bool, reqwest::Error> {
-        let window_id = unix_secs() / window_secs;
-        let key = format!("ratelimit:{identifier}:{window_id}");
+    ) -> Result<RateLimitInfo, reqwest::Error> {
+        let window_id    = unix_secs() / window_secs;
+        let window_reset = (window_id + 1) * window_secs;
+        let key          = format!("ratelimit:{identifier}:{window_id}");
 
         let count: i64 = self.command(vec![json!("INCR"), json!(&key)]).await?;
 
@@ -85,14 +99,18 @@ impl UpstashClient {
         // because the next window rotation will create a fresh key anyway.
         if count == 1 {
             let client = self.clone();
-            let k = key.clone();
+            let k   = key.clone();
             let ttl = (window_secs + 1).to_string();
             tokio::spawn(async move {
                 let _ = client.command::<i64>(vec![json!("EXPIRE"), json!(k), json!(ttl)]).await;
             });
         }
 
-        Ok(count <= limit as i64)
+        Ok(RateLimitInfo {
+            allowed:      count <= limit as i64,
+            count,
+            window_reset,
+        })
     }
 
     /// Increment a monthly usage counter and set its TTL (~3 months).
@@ -163,30 +181,34 @@ mod tests {
     async fn check_rate_limit_allows_first_request() {
         // Counter starts at 0 → INCR returns 1 → 1 ≤ 10 → allowed.
         // count == 1 also triggers the EXPIRE fire-and-forget spawn.
-        let url = start_mock(0).await;
+        let url    = start_mock(0).await;
         let client = UpstashClient::new(url, "tok".into());
-        let ok = client.check_rate_limit("id", 10, 60).await.unwrap();
+        let info   = client.check_rate_limit("id", 10, 60).await.unwrap();
         // Give the EXPIRE spawn a chance to run (exercises the async block).
         tokio::time::sleep(std::time::Duration::from_millis(20)).await;
-        assert!(ok);
+        assert!(info.allowed);
+        assert_eq!(info.count, 1);
+        assert!(info.window_reset > 0);
     }
 
     #[tokio::test]
     async fn check_rate_limit_allows_non_first_request() {
         // Counter starts at 1 → INCR returns 2 → no EXPIRE spawn, still allowed.
-        let url = start_mock(1).await;
+        let url    = start_mock(1).await;
         let client = UpstashClient::new(url, "tok".into());
-        let ok = client.check_rate_limit("id", 10, 60).await.unwrap();
-        assert!(ok);
+        let info   = client.check_rate_limit("id", 10, 60).await.unwrap();
+        assert!(info.allowed);
+        assert_eq!(info.count, 2);
     }
 
     #[tokio::test]
     async fn check_rate_limit_blocks_when_exceeded() {
         // Counter starts at 10 → INCR returns 11 → 11 > 10 → blocked.
-        let url = start_mock(10).await;
+        let url    = start_mock(10).await;
         let client = UpstashClient::new(url, "tok".into());
-        let blocked = client.check_rate_limit("id", 10, 60).await.unwrap();
-        assert!(!blocked);
+        let info   = client.check_rate_limit("id", 10, 60).await.unwrap();
+        assert!(!info.allowed);
+        assert_eq!(info.count, 11);
     }
 
     #[tokio::test]

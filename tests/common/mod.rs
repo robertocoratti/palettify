@@ -3,19 +3,13 @@
 // Each integration test file in tests/ declares `mod common;` to pull this in.
 // Rust resolves that to tests/common/mod.rs automatically.
 
-use axum::{
-    extract::DefaultBodyLimit,
-    middleware,
-    routing::{get, post},
-    Router,
-};
+use axum::Router;
 use serde_json::Value;
 use std::collections::HashSet;
 
 use palettify::{
-    api,
     config::{Config, Environment},
-    middleware as mw,
+    router::build_router,
     state::{AppState, SharedState},
 };
 
@@ -44,21 +38,7 @@ pub fn test_state(api_keys: Option<Vec<&str>>) -> SharedState {
 /// Build a Router wired identically to main.rs but without a TCP listener.
 /// Use with `tower::ServiceExt::oneshot` to send a single test request.
 pub fn test_app(state: SharedState) -> Router {
-    let max_upload = state.config.max_upload_bytes;
-
-    let protected = Router::new()
-        .route("/api/v1/process", post(api::process))
-        .layer(middleware::from_fn_with_state(
-            state.clone(),
-            mw::authenticate_and_rate_limit,
-        ));
-
-    Router::new()
-        .route("/health", get(api::health))
-        .route("/api/v1/palettes", get(api::list_palettes))
-        .merge(protected)
-        .with_state(state)
-        .layer(DefaultBodyLimit::max(max_upload))
+    build_router(state)
 }
 
 /// Consume a response body and parse it as JSON.

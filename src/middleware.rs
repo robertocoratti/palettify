@@ -2,11 +2,17 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use axum::{
     extract::{Request, State},
+    http::{HeaderName, HeaderValue},
     middleware::Next,
-    response::Response,
+    response::{IntoResponse, Response},
 };
 
 use crate::{error::AppError, state::SharedState};
+
+// Rate-limit header names (lowercase, as required by HTTP/2).
+static HDR_RL_LIMIT:     HeaderName = HeaderName::from_static("x-ratelimit-limit");
+static HDR_RL_REMAINING: HeaderName = HeaderName::from_static("x-ratelimit-remaining");
+static HDR_RL_RESET:     HeaderName = HeaderName::from_static("x-ratelimit-reset");
 
 /// Combined authentication + rate-limiting + usage-tracking middleware.
 ///
@@ -14,14 +20,16 @@ use crate::{error::AppError, state::SharedState};
 ///   1. Validate API key when auth is enabled → 401 if missing/invalid.
 ///   2. Determine rate-limit identity: the API key if present, otherwise
 ///      the client IP (resolved through Fly.io / proxy headers).
-///   3. Run fixed-window rate-limit check via Upstash REST → 429 if exceeded.
-///      If Upstash is unreachable the check is skipped (fail-open) so a
-///      transient outage never takes down the API.
+///   3. Run fixed-window rate-limit check via Upstash REST.
+///      - If exceeded → 429 with X-RateLimit-* headers.
+///      - If Upstash is unreachable the check is skipped (fail-open) so a
+///        transient outage never takes down the API.
 ///   4. Fire-and-forget INCR on the monthly usage counter for the API key.
+///   5. Call the next handler and attach X-RateLimit-* headers to the response.
 pub async fn authenticate_and_rate_limit(
     State(state): State<SharedState>,
-    request: Request,
-    next: Next,
+    request:      Request,
+    next:         Next,
 ) -> Result<Response, AppError> {
     // ── 1. Authentication ────────────────────────────────────────────────────
     let api_key: Option<String> = if let Some(api_keys) = &state.config.api_keys {
@@ -36,7 +44,7 @@ pub async fn authenticate_and_rate_limit(
         }
         Some(provided.to_string())
     } else {
-        // Auth disabled (dev mode) — still capture key for tracking if supplied.
+        // Auth disabled — still capture key for tracking if supplied.
         request
             .headers()
             .get("x-api-key")
@@ -45,6 +53,10 @@ pub async fn authenticate_and_rate_limit(
     };
 
     // ── 2 & 3. Rate limiting ─────────────────────────────────────────────────
+    // When Upstash is configured we run a rate-limit check and attach
+    // X-RateLimit-* headers to every response (including 429s).
+    let mut rl_context: Option<(u64, i64, u64)> = None; // (limit, count, reset)
+
     if let Some(upstash) = &state.redis {
         let identifier = match &api_key {
             Some(key) => format!("key:{key}"),
@@ -52,18 +64,35 @@ pub async fn authenticate_and_rate_limit(
         };
 
         match upstash
-            .check_rate_limit(&identifier, state.config.rate_limit_requests, state.config.rate_limit_window_secs)
+            .check_rate_limit(
+                &identifier,
+                state.config.rate_limit_requests,
+                state.config.rate_limit_window_secs,
+            )
             .await
         {
-            Ok(false) => {
+            Ok(info) if !info.allowed => {
                 tracing::warn!(identity = %identifier, "rate limit exceeded");
-                return Err(AppError::TooManyRequests);
+                let mut resp = AppError::TooManyRequests.into_response();
+                attach_rl_headers(
+                    resp.headers_mut(),
+                    state.config.rate_limit_requests,
+                    info.count,
+                    info.window_reset,
+                );
+                return Ok(resp);
+            }
+            Ok(info) => {
+                rl_context = Some((
+                    state.config.rate_limit_requests,
+                    info.count,
+                    info.window_reset,
+                ));
             }
             Err(e) => {
                 // Fail open — a transient Upstash error must not block requests.
                 tracing::warn!("Upstash rate-limit check failed (fail-open): {e}");
             }
-            Ok(true) => {}
         }
 
         // ── 4. Usage tracking (fire-and-forget) ──────────────────────────────
@@ -73,7 +102,36 @@ pub async fn authenticate_and_rate_limit(
         }
     }
 
-    Ok(next.run(request).await)
+    // ── 5. Forward request and attach rate-limit headers ─────────────────────
+    let mut response = next.run(request).await;
+
+    if let Some((limit, count, reset)) = rl_context {
+        attach_rl_headers(response.headers_mut(), limit, count, reset);
+    }
+
+    Ok(response)
+}
+
+/// Attach X-RateLimit-{Limit,Remaining,Reset} headers to `headers`.
+/// `count` is the current window count after this request; `remaining` is
+/// clamped to zero so it never goes negative on the last allowed request.
+fn attach_rl_headers(
+    headers:      &mut axum::http::HeaderMap,
+    limit:        u64,
+    count:        i64,
+    window_reset: u64,
+) {
+    let remaining = (limit as i64 - count).max(0) as u64;
+
+    if let Ok(v) = HeaderValue::from_str(&limit.to_string()) {
+        headers.insert(HDR_RL_LIMIT.clone(), v);
+    }
+    if let Ok(v) = HeaderValue::from_str(&remaining.to_string()) {
+        headers.insert(HDR_RL_REMAINING.clone(), v);
+    }
+    if let Ok(v) = HeaderValue::from_str(&window_reset.to_string()) {
+        headers.insert(HDR_RL_RESET.clone(), v);
+    }
 }
 
 /// Increments the monthly usage counter for an API key. Designed to be called
@@ -172,16 +230,32 @@ mod tests {
         assert!((1..=12).contains(&month));
     }
 
+    // ── attach_rl_headers ────────────────────────────────────────────────────
+
+    #[test]
+    fn attach_rl_headers_sets_all_three() {
+        let mut map = axum::http::HeaderMap::new();
+        attach_rl_headers(&mut map, 60, 3, 1_700_000_000);
+        assert_eq!(map.get("x-ratelimit-limit").unwrap(),     "60");
+        assert_eq!(map.get("x-ratelimit-remaining").unwrap(), "57");
+        assert_eq!(map.get("x-ratelimit-reset").unwrap(),     "1700000000");
+    }
+
+    #[test]
+    fn attach_rl_headers_remaining_clamps_to_zero() {
+        let mut map = axum::http::HeaderMap::new();
+        attach_rl_headers(&mut map, 10, 15, 0); // count > limit
+        assert_eq!(map.get("x-ratelimit-remaining").unwrap(), "0");
+    }
+
     // ── track_usage_async (fire-and-forget error path) ──────────────────────
 
     #[tokio::test]
     async fn track_usage_async_logs_and_ignores_error() {
-        // Bad URL → connection refused → Err → warn log (line 76 of original)
         let client = crate::upstash::UpstashClient::new(
             "http://127.0.0.1:19997".to_string(),
             "test-token".to_string(),
         );
-        // Must not panic; the error is logged and swallowed.
         track_usage_async(client, "test-key".to_string()).await;
     }
 }

@@ -129,4 +129,13 @@ mod tests {
         let resp = build_image_response(img, OutputFormat::WebP).unwrap();
         assert_eq!(resp.headers().get("content-type").unwrap(), "image/webp");
     }
+
+    #[test]
+    fn build_response_returns_error_when_encoding_fails() {
+        // JPEG encoder rejects zero-dimension images; this exercises the
+        // map_err branch inside build_image_response.
+        let img = RgbImage::new(0, 0);
+        let result = build_image_response(img, OutputFormat::Jpeg);
+        assert!(result.is_err(), "encoding a 0×0 image as JPEG must fail");
+    }
 }

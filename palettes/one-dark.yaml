@@ -1,0 +1,19 @@
+name: one-dark
+description: Atom's iconic One Dark UI theme color palette
+url: https://github.com/atom/one-dark-ui
+colors:
+  - background: "#282c34"
+  - background-dark: "#21252b"
+  - gutter: "#353b45"
+  - selection: "#3e4451"
+  - comment: "#545862"
+  - foreground: "#abb2bf"
+  - foreground-light: "#b6bdca"
+  - foreground-lighter: "#c8ccd4"
+  - red: "#e06c75"
+  - green: "#98c379"
+  - yellow: "#e5c07b"
+  - blue: "#61afef"
+  - purple: "#c678dd"
+  - cyan: "#56b6c2"
+  - orange: "#d19a66"

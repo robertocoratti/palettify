@@ -1,0 +1,21 @@
+name: tokyo-night
+description: A clean, dark theme inspired by the lights of downtown Tokyo at night
+url: https://github.com/enkia/tokyo-night-vscode-theme
+colors:
+  - background: "#1a1b26"
+  - background-dark: "#16161e"
+  - storm-bg1: "#2f3549"
+  - storm-bg2: "#343b58"
+  - comment: "#444b6a"
+  - dark-fg: "#787c99"
+  - foreground: "#a9b1d6"
+  - light-fg: "#cbccd1"
+  - foreground-bright: "#c0caf5"
+  - orange: "#ff9e64"
+  - yellow: "#e0af68"
+  - green: "#9ece6a"
+  - teal: "#1abc9c"
+  - cyan: "#2ac3de"
+  - blue: "#7aa2f7"
+  - purple: "#bb9af7"
+  - red: "#f7768e"
