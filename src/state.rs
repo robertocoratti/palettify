@@ -57,6 +57,7 @@ mod tests {
             palettes_dir:           None,
             api_keys:               None,
             max_upload_bytes:       10 * 1024 * 1024,
+            max_image_pixels:       25_000_000,
             upstash_rest_url:       None,
             upstash_rest_token:     None,
             rate_limit_requests:    60,

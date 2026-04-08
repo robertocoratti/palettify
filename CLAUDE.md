@@ -70,7 +70,8 @@ This is an Axum HTTP API server with two public routes and one protected route:
 | `PORT` | `3000` | TCP port |
 | `ENVIRONMENT` | `development` | `production` hides internal error detail |
 | `API_KEYS` | (unset = auth disabled) | Comma-separated valid keys for `X-Api-Key` |
-| `MAX_UPLOAD_MB` | `50` | Max request body size |
+| `MAX_UPLOAD_MB` | `10` | Max request body size |
+| `MAX_IMAGE_PIXELS` | `25000000` | Max decoded image area (width×height); ~5000×5000 |
 | `UPSTASH_REDIS_REST_URL` | (unset = rate limiting off) | Upstash REST endpoint |
 | `UPSTASH_REDIS_REST_TOKEN` | — | Upstash bearer token |
 | `RATE_LIMIT_REQUESTS` | `60` | Requests per window |

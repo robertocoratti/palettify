@@ -35,8 +35,12 @@ pub struct Config {
     /// If None, authentication is disabled (useful in development).
     pub api_keys: Option<HashSet<String>>,
 
-    /// Maximum allowed request body size in bytes. Default: 50 MB.
+    /// Maximum allowed request body size in bytes. Default: 10 MB.
     pub max_upload_bytes: usize,
+
+    /// Maximum allowed image area in pixels (width × height). Default: 25,000,000 (~5000×5000).
+    /// Requests exceeding this limit are rejected with 400 before processing begins.
+    pub max_image_pixels: u64,
 
     /// Upstash Redis REST endpoint (from the "REST API" tab in the Upstash dashboard).
     /// Example: https://your-db.upstash.io
@@ -83,9 +87,14 @@ impl Config {
         let max_upload_bytes = env::var("MAX_UPLOAD_MB")
             .ok()
             .and_then(|v| v.parse::<usize>().ok())
-            .unwrap_or(50)
+            .unwrap_or(10)
             * 1024
             * 1024;
+
+        let max_image_pixels = env::var("MAX_IMAGE_PIXELS")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(25_000_000);
 
         let upstash_rest_url =
             env::var("UPSTASH_REDIS_REST_URL").ok().filter(|s| !s.trim().is_empty());
@@ -109,6 +118,7 @@ impl Config {
             palettes_dir,
             api_keys,
             max_upload_bytes,
+            max_image_pixels,
             upstash_rest_url,
             upstash_rest_token,
             rate_limit_requests,
@@ -149,7 +159,8 @@ mod tests {
         assert_eq!(cfg.port, 3000);
         assert_eq!(cfg.environment, Environment::Development);
         assert!(cfg.api_keys.is_none());
-        assert_eq!(cfg.max_upload_bytes, 50 * 1024 * 1024);
+        assert_eq!(cfg.max_upload_bytes, 10 * 1024 * 1024);
+        assert_eq!(cfg.max_image_pixels, 25_000_000);
         assert!(!cfg.is_production());
         assert!(!cfg.auth_enabled());
     }
@@ -199,10 +210,19 @@ mod tests {
     #[test]
     fn max_upload_mb_scales_correctly() {
         let _guard = ENV_LOCK.lock().unwrap();
-        unsafe { env::set_var("MAX_UPLOAD_MB", "10"); }
+        unsafe { env::set_var("MAX_UPLOAD_MB", "20"); }
         let cfg = Config::from_env();
-        assert_eq!(cfg.max_upload_bytes, 10 * 1024 * 1024);
+        assert_eq!(cfg.max_upload_bytes, 20 * 1024 * 1024);
         unsafe { env::remove_var("MAX_UPLOAD_MB"); }
+    }
+
+    #[test]
+    fn max_image_pixels_is_parsed() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        unsafe { env::set_var("MAX_IMAGE_PIXELS", "8000000"); }
+        let cfg = Config::from_env();
+        assert_eq!(cfg.max_image_pixels, 8_000_000);
+        unsafe { env::remove_var("MAX_IMAGE_PIXELS"); }
     }
 
     #[test]

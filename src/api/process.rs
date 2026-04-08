@@ -46,6 +46,14 @@ pub async fn process(
     let img = image::load_from_memory(&input.image_bytes)
         .map_err(|e| AppError::BadRequest(format!("could not decode image: {e}")))?;
 
+    let pixels = img.width() as u64 * img.height() as u64;
+    if pixels > state.config.max_image_pixels {
+        return Err(AppError::BadRequest(format!(
+            "image too large: {pixels} pixels (max {})",
+            state.config.max_image_pixels
+        )));
+    }
+
     let result = tokio::task::spawn_blocking(move || {
         process_image(img, &input.palette, input.algorithm)
     })

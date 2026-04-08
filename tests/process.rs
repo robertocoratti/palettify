@@ -8,7 +8,7 @@ use axum::{
 };
 use tower::ServiceExt;
 
-use common::{make_multipart_body, make_multipart_full, minimal_png, test_app, test_state};
+use common::{make_multipart_body, make_multipart_full, minimal_png, test_app, test_state, test_state_with_pixel_limit};
 
 #[tokio::test]
 async fn process_with_valid_palette_name_returns_200_png() {
@@ -402,6 +402,29 @@ async fn process_with_invalid_utf8_palette_field_returns_400() {
         .await
         .unwrap();
     assert!(resp.status().is_client_error());
+}
+
+// ── pixel limit ─────────────────────────────────────────────────────────────
+
+#[tokio::test]
+async fn process_with_image_exceeding_pixel_limit_returns_400() {
+    // minimal_png() is 1×1 = 1 pixel; set limit to 0 so it is exceeded.
+    let app = test_app(test_state_with_pixel_limit(0));
+    let (ct, body) = make_multipart_body(&minimal_png(), Some("nord"), None);
+
+    let resp = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri("/api/v1/process")
+                .header("Content-Type", ct)
+                .body(Body::from(body))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
 }
 
 // ── custom palette with empty lines (exercises the filter closure) ───────────

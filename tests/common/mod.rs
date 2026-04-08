@@ -25,6 +25,7 @@ pub fn test_state(api_keys: Option<Vec<&str>>) -> SharedState {
         palettes_dir: None,
         api_keys,
         max_upload_bytes: 10 * 1024 * 1024,
+        max_image_pixels: 25_000_000,
         upstash_rest_url: None,
         upstash_rest_token: None,
         rate_limit_requests: 60,
@@ -159,6 +160,23 @@ pub fn make_multipart_full(
     (format!("multipart/form-data; boundary={boundary}"), body)
 }
 
+/// Build a state with a tiny pixel limit, used to test the oversize-image rejection.
+pub fn test_state_with_pixel_limit(max_pixels: u64) -> SharedState {
+    let config = Config {
+        port:                  3000,
+        environment:           Environment::Development,
+        palettes_dir:          None,
+        api_keys:              None,
+        max_upload_bytes:      10 * 1024 * 1024,
+        max_image_pixels:      max_pixels,
+        upstash_rest_url:      None,
+        upstash_rest_token:    None,
+        rate_limit_requests:   60,
+        rate_limit_window_secs: 60,
+    };
+    AppState::new(config, None)
+}
+
 /// Build a state with an active Upstash client pointing at `redis_url`.
 /// Use this for rate-limiting integration tests.
 pub fn test_state_with_redis(api_keys: Option<Vec<&str>>, redis_url: &str) -> SharedState {
@@ -171,6 +189,7 @@ pub fn test_state_with_redis(api_keys: Option<Vec<&str>>, redis_url: &str) -> Sh
         palettes_dir:          None,
         api_keys,
         max_upload_bytes:      10 * 1024 * 1024,
+        max_image_pixels:      25_000_000,
         upstash_rest_url:      Some(redis_url.to_string()),
         upstash_rest_token:    Some("test-token".to_string()),
         rate_limit_requests:   10,
