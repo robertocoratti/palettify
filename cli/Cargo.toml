@@ -1,0 +1,15 @@
+[package]
+name        = "palettify-cli"
+version     = "0.1.0"
+edition     = "2021"
+description = "CLI for palettify — local image color palette mapping"
+authors     = ["Roberto Coratti <corattiroberto@gmail.com>"]
+
+[[bin]]
+name = "palettify"
+path = "src/main.rs"
+
+[dependencies]
+palettify-core = { path = "../core" }
+image = "0.25"
+clap  = { version = "4", features = ["derive"] }
