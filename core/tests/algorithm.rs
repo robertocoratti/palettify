@@ -12,34 +12,34 @@ fn bw() -> Palette {
     Palette::from_hex_list("bw", &["#000000", "#ffffff"]).unwrap()
 }
 
-// ── from_str ─────────────────────────────────────────────────────────────────
+// ── FromStr ──────────────────────────────────────────────────────────────────
 
 #[test]
 fn from_str_nearest_variants() {
-    assert!(matches!(Algorithm::from_str("nearest"), Some(Algorithm::Nearest)));
-    assert!(matches!(Algorithm::from_str(""), Some(Algorithm::Nearest)));
-    assert!(matches!(Algorithm::from_str("  NEAREST  "), Some(Algorithm::Nearest)));
+    assert!(matches!("nearest".parse(), Ok(Algorithm::Nearest)));
+    assert!(matches!("".parse(), Ok(Algorithm::Nearest)));
+    assert!(matches!("  NEAREST  ".parse(), Ok(Algorithm::Nearest)));
 }
 
 #[test]
 fn from_str_floyd_steinberg_variants() {
-    assert!(matches!(Algorithm::from_str("floyd-steinberg"), Some(Algorithm::FloydSteinberg)));
-    assert!(matches!(Algorithm::from_str("dither"), Some(Algorithm::FloydSteinberg)));
-    assert!(matches!(Algorithm::from_str("diffusion"), Some(Algorithm::FloydSteinberg)));
-    assert!(matches!(Algorithm::from_str("FLOYD-STEINBERG"), Some(Algorithm::FloydSteinberg)));
+    assert!(matches!("floyd-steinberg".parse(), Ok(Algorithm::FloydSteinberg)));
+    assert!(matches!("dither".parse::<Algorithm>(), Ok(Algorithm::FloydSteinberg)));
+    assert!(matches!("diffusion".parse::<Algorithm>(), Ok(Algorithm::FloydSteinberg)));
+    assert!(matches!("FLOYD-STEINBERG".parse::<Algorithm>(), Ok(Algorithm::FloydSteinberg)));
 }
 
 #[test]
 fn from_str_ordered_variants() {
-    assert!(matches!(Algorithm::from_str("ordered"), Some(Algorithm::Ordered)));
-    assert!(matches!(Algorithm::from_str("bayer"), Some(Algorithm::Ordered)));
-    assert!(matches!(Algorithm::from_str("ORDERED"), Some(Algorithm::Ordered)));
+    assert!(matches!("ordered".parse(), Ok(Algorithm::Ordered)));
+    assert!(matches!("bayer".parse::<Algorithm>(), Ok(Algorithm::Ordered)));
+    assert!(matches!("ORDERED".parse::<Algorithm>(), Ok(Algorithm::Ordered)));
 }
 
 #[test]
-fn from_str_unknown_returns_none() {
-    assert!(Algorithm::from_str("halftone").is_none());
-    assert!(Algorithm::from_str("random").is_none());
+fn from_str_unknown_returns_err() {
+    assert!("halftone".parse::<Algorithm>().is_err());
+    assert!("random".parse::<Algorithm>().is_err());
 }
 
 // ── algorithm correctness on trivial inputs ───────────────────────────────────

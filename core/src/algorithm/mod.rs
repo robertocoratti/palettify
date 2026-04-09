@@ -2,6 +2,8 @@ mod floyd_steinberg;
 mod nearest;
 mod ordered;
 
+use std::str::FromStr;
+
 use image::{DynamicImage, RgbImage};
 
 use crate::palette::Palette;
@@ -21,23 +23,22 @@ pub enum Algorithm {
     Ordered,
 }
 
-impl Algorithm {
-    /// Parse an algorithm from a string value supplied by the caller.
-    /// Returns `None` for unrecognised values so the caller can emit the
-    /// appropriate error with context.
-    pub fn from_str(s: &str) -> Option<Self> {
+impl FromStr for Algorithm {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.trim().to_lowercase().as_str() {
-            "nearest"         => Some(Self::Nearest),
-            ""                => Some(Self::Nearest),
-            "floyd-steinberg" => Some(Self::FloydSteinberg),
-            "dither"          => Some(Self::FloydSteinberg),
-            "diffusion"       => Some(Self::FloydSteinberg),
-            "ordered"         => Some(Self::Ordered),
-            "bayer"           => Some(Self::Ordered),
-            _                 => None,
+            "nearest" | ""        => Ok(Self::Nearest),
+            "floyd-steinberg"
+            | "dither"
+            | "diffusion"         => Ok(Self::FloydSteinberg),
+            "ordered" | "bayer"   => Ok(Self::Ordered),
+            _                     => Err(()),
         }
     }
+}
 
+impl Algorithm {
     /// Remap every pixel in `img` to a color in `palette` using this algorithm.
     pub fn run(self, img: DynamicImage, palette: &Palette) -> RgbImage {
         match self {

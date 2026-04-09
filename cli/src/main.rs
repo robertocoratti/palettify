@@ -86,7 +86,7 @@ fn main() {
     };
 
     // Resolve algorithm.
-    let algorithm = Algorithm::from_str(&cli.algo).unwrap_or_else(|| {
+    let algorithm = cli.algo.parse::<Algorithm>().unwrap_or_else(|_| {
         eprintln!("error: unknown algorithm '{}'. Valid values: nearest, floyd-steinberg, ordered", cli.algo);
         std::process::exit(1);
     });

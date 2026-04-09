@@ -29,6 +29,7 @@ pub fn linear_to_srgb(c: f32) -> u8 {
 ///
 /// Reference: <https://bottosson.github.io/posts/oklab/>
 #[inline]
+#[allow(clippy::excessive_precision)]
 pub fn rgb_to_oklab(r: u8, g: u8, b: u8) -> [f32; 3] {
     let r = srgb_to_linear(r);
     let g = srgb_to_linear(g);
