@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+echo "[ pre-push ] running clippy..."
+cargo clippy -- -D warnings
+
+echo "[ pre-push ] running tests..."
+cargo test --quiet
+
+echo "[ pre-push ] all checks passed."

@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Setup
+
+After cloning, enable the git hooks (runs clippy + tests before every push):
+
+```bash
+git config core.hooksPath .githooks
+```
+
 ## Commands
 
 ```bash
