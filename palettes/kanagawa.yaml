@@ -1,0 +1,20 @@
+name: kanagawa
+description: Kanagawa Wave — inspired by the colors of feudal Japan
+url: https://github.com/rebelot/kanagawa.nvim
+colors:
+  - bg-dark: "#16161d"
+  - bg: "#1f1f28"
+  - bg-highlight: "#2a2a37"
+  - bg-special: "#54546d"
+  - fg: "#dcd7ba"
+  - fg-dim: "#c8c093"
+  - comment: "#727169"
+  - red: "#c34043"
+  - orange: "#ffa066"
+  - yellow: "#c0a36e"
+  - green: "#98bb6c"
+  - aqua: "#7aa89f"
+  - blue: "#7e9cd8"
+  - violet: "#957fb8"
+  - pink: "#d27e99"
+  - teal: "#6a9589"

@@ -719,6 +719,8 @@ dependencies = [
  "clap",
  "image",
  "palettify-core",
+ "serde",
+ "serde_yaml",
 ]
 
 [[package]]

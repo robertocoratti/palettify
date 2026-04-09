@@ -1,0 +1,22 @@
+name: nightfox
+description: Nightfox — dark blue-toned theme with warm accents
+url: https://github.com/EdenEast/nightfox.nvim
+colors:
+  - bg0: "#192330"
+  - bg1: "#212e3f"
+  - bg2: "#29394f"
+  - bg3: "#313f55"
+  - bg4: "#39506d"
+  - fg0: "#d6d6d7"
+  - fg1: "#cdcecf"
+  - fg2: "#aeafb0"
+  - fg3: "#71839b"
+  - comment: "#738091"
+  - red: "#c94f6d"
+  - orange: "#f4a261"
+  - yellow: "#dbc074"
+  - green: "#81b29a"
+  - blue: "#719cd6"
+  - cyan: "#63cdcf"
+  - magenta: "#9d79d6"
+  - pink: "#d67ad2"

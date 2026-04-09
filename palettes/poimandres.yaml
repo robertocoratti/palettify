@@ -1,0 +1,18 @@
+name: poimandres
+description: Poimandres — minimal dark theme inspired by deep space
+url: https://github.com/drcmda/poimandres-theme
+colors:
+  - bg: "#1b1e28"
+  - surface: "#171922"
+  - overlay: "#252837"
+  - muted: "#6b6f89"
+  - subtle: "#a6accd"
+  - fg: "#e4f0fb"
+  - teal: "#5de4c7"
+  - blue: "#89ddff"
+  - blue-light: "#add7ff"
+  - purple: "#c9b8ff"
+  - red: "#d0679d"
+  - orange: "#f19967"
+  - yellow: "#fffac2"
+  - green: "#5fb3a1"

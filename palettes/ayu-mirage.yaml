@@ -1,0 +1,15 @@
+name: ayu-mirage
+description: Ayu — mirage variant, dimmed and balanced
+url: https://github.com/dempfi/ayu
+colors:
+  - background: "#1f2430"
+  - foreground: "#cbccc6"
+  - comment: "#5c6773"
+  - red: "#ff3333"
+  - orange: "#ff9940"
+  - yellow: "#ffd580"
+  - green: "#bae67e"
+  - teal: "#95e6cb"
+  - blue: "#73d0ff"
+  - purple: "#d4bfff"
+  - pink: "#f28779"

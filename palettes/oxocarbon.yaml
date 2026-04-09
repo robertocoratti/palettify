@@ -1,0 +1,20 @@
+name: oxocarbon
+description: Oxocarbon — IBM Carbon-inspired high-contrast dark theme
+url: https://github.com/nyoom-engineering/oxocarbon.nvim
+colors:
+  - bg0: "#161616"
+  - bg1: "#262626"
+  - bg2: "#393939"
+  - bg3: "#525252"
+  - bg4: "#6f6f6f"
+  - fg: "#f2f4f8"
+  - fg-dim: "#b0b0b0"
+  - blue: "#78a9ff"
+  - cyan: "#3ddbd9"
+  - teal: "#08bdba"
+  - green: "#42be65"
+  - yellow: "#f1c21b"
+  - orange: "#ff832b"
+  - red: "#fa4d56"
+  - magenta: "#ee5396"
+  - purple: "#be95ff"

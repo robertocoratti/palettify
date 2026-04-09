@@ -40,6 +40,10 @@ cargo check
 
 # Lint
 cargo clippy
+
+# Coverage (requires cargo-llvm-cov: cargo install cargo-llvm-cov)
+cargo llvm-cov
+cargo llvm-cov --html   # generates target/llvm-cov/html/index.html
 ```
 
 ## Architecture
@@ -48,11 +52,24 @@ This is a Cargo workspace with two crates:
 
 ```
 palettify/
-├── Cargo.toml          (workspace)
-├── palettes/           (10 built-in YAML palette files, embedded at compile time)
-├── core/               (palettify-core — pure library, no I/O)
-└── cli/                (palettify-cli — binary, depends on core)
+├── Cargo.toml              (workspace)
+├── palettes/               (32 built-in YAML palette files — source of truth)
+├── core/                   (palettify-core — pure library, no I/O)
+│   └── tests/              (integration tests: color.rs, palette.rs, processor.rs, algorithm.rs)
+└── cli/                    (palettify — binary, depends on core)
+    ├── build.rs            (reads palettes/, validates schema, generates palettes_generated.rs)
+    └── src/
+        ├── main.rs
+        └── palettes_generated.rs   [gitignored — recreated on every cargo build]
 ```
+
+**`palettes/`**
+
+32 YAML files at the workspace root. Each file is the canonical source for a built-in palette. `build.rs` reads this directory at compile time, validates every file (schema + per-color hex), and embeds the content into the binary. Adding a new palette = drop a `.yaml` file here, rebuild.
+
+**`cli/build.rs`**
+
+Runs before compilation. Validates all `palettes/*.yaml` (required fields, non-empty colors list, valid hex per color), then generates `cli/src/palettes_generated.rs` with a `const EMBEDDED: &[(&str, &str)]` array of `(slug, yaml_content)` pairs. Writing to `src/` (not `$OUT_DIR`) makes the file visible to rust-analyzer without any special configuration.
 
 **`core/` — `palettify-core`**
 
@@ -60,20 +77,21 @@ Pure Rust library with no I/O. Key modules:
 
 - [core/src/color.rs](core/src/color.rs) — sRGB ↔ OKLab conversion (`rgb_to_oklab`, `srgb_to_linear`, `linear_to_srgb`) and hex parsing (`parse_hex`)
 - [core/src/palette.rs](core/src/palette.rs) — `Palette` and `PaletteColor` structs; constructors: `from_hex_list`, `from_yaml`, `from_file`, `load_directory`; nearest-color search in OKLab space
-- [core/src/algorithm/](core/src/algorithm/mod.rs) — `Algorithm` enum (`Nearest` | `FloydSteinberg` | `Ordered`) with `from_str` and `run`; each variant in its own submodule (`nearest.rs`, `floyd_steinberg.rs`, `ordered.rs`)
+- [core/src/algorithm/](core/src/algorithm/mod.rs) — `Algorithm` enum (`Nearest` | `FloydSteinberg` | `Ordered`) implementing `FromStr`; each variant in its own submodule (`nearest.rs`, `floyd_steinberg.rs`, `ordered.rs`)
 - [core/src/processor.rs](core/src/processor.rs) — thin dispatch: `process_image(img, palette, algorithm) -> RgbImage`
 - [core/src/error.rs](core/src/error.rs) — `CoreError` enum
 
-**`cli/` — `palettify-cli`**
+**`cli/` — `palettify`**
 
-Binary crate. Parses args with Clap, embeds palettes via `include_str!`, calls `process_image`, writes output.
+Binary crate. Parses args with Clap, includes the generated palette array, calls `process_image`, writes output.
 
-- `--palette <name>` — built-in palette by slug
+- `-l, --list-palettes` — print all built-in palettes (slug, color count, description) and exit
+- `--show-palette <name>` — print all colors of a palette with ANSI true-color swatches and exit
+- `-p, --palette <name>` — built-in palette by slug
 - `--palette-file <path>` — custom YAML palette from disk
-- `--output <path>` — output file (default: `<stem>-palettified.<ext>`)
-- `--format png|jpg|webp` — output format (default: `png`)
-- `--algo nearest|floyd-steinberg|ordered` — algorithm (default: `nearest`)
-- `--list-palettes` — print available built-in palettes and exit
+- `-o, --output <path>` — output file (default: `<stem>-palettified.<ext>`)
+- `-f, --format png|jpg|webp` — output format (default: `png`)
+- `-a, --algo nearest|floyd-steinberg|ordered` — algorithm (default: `nearest`)
 
 **Algorithms** (all operate in OKLab perceptual color space):
 

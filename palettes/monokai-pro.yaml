@@ -1,0 +1,13 @@
+name: monokai-pro
+description: Monokai Pro — refined dark theme with softer contrast
+url: https://monokai.pro
+colors:
+  - background: "#2d2a2e"
+  - foreground: "#fcfcfa"
+  - comment: "#727072"
+  - red: "#ff6188"
+  - orange: "#fc9867"
+  - yellow: "#ffd866"
+  - green: "#a9dc76"
+  - blue: "#78dce8"
+  - purple: "#ab9df2"

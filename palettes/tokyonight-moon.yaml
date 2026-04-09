@@ -1,0 +1,21 @@
+name: tokyonight-moon
+description: Tokyo Night Moon — cool purple-tinged dark variant
+url: https://github.com/folke/tokyonight.nvim
+colors:
+  - bg: "#222436"
+  - bg-dark: "#1e2030"
+  - bg-highlight: "#2f334d"
+  - terminal-black: "#444a73"
+  - fg: "#c8d3f5"
+  - fg-dark: "#828bb8"
+  - comment: "#636da6"
+  - red: "#ff757f"
+  - orange: "#ff966c"
+  - yellow: "#ffc777"
+  - green: "#c3e88d"
+  - teal: "#1abc9c"
+  - blue: "#82aaff"
+  - cyan: "#86e1fc"
+  - blue-light: "#89ddff"
+  - magenta: "#c099ff"
+  - purple: "#fca7ea"

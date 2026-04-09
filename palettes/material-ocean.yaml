@@ -1,0 +1,16 @@
+name: material-ocean
+description: Material Theme — Ocean variant, deep blue-black background
+url: https://material-theme.com
+colors:
+  - background: "#0f111a"
+  - current-line: "#1a1c25"
+  - foreground: "#8f93a2"
+  - comment: "#464b5d"
+  - red: "#ff5370"
+  - orange: "#f78c6c"
+  - yellow: "#ffcb6b"
+  - green: "#c3e88d"
+  - cyan: "#89ddff"
+  - blue: "#82aaff"
+  - purple: "#c792ea"
+  - pink: "#ff9cac"

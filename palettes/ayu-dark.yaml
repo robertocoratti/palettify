@@ -1,0 +1,16 @@
+name: ayu-dark
+description: Ayu — simple dark theme with vivid accents
+url: https://github.com/dempfi/ayu
+colors:
+  - background: "#0d1017"
+  - ui-bg: "#131721"
+  - foreground: "#bfbdb6"
+  - comment: "#626a73"
+  - red: "#f07178"
+  - orange: "#ff8f40"
+  - yellow: "#ffb454"
+  - green: "#7fd962"
+  - teal: "#95e6cb"
+  - blue: "#59c2ff"
+  - purple: "#d2a6ff"
+  - white: "#e6e1cf"

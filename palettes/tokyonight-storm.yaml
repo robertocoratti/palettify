@@ -1,0 +1,21 @@
+name: tokyonight-storm
+description: Tokyo Night Storm — slightly lighter variant with stormy blues
+url: https://github.com/folke/tokyonight.nvim
+colors:
+  - bg: "#24283b"
+  - bg-dark: "#1f2335"
+  - bg-highlight: "#292e42"
+  - terminal-black: "#414868"
+  - fg: "#c0caf5"
+  - fg-dark: "#a9b1d6"
+  - comment: "#565f89"
+  - red: "#f7768e"
+  - orange: "#ff9e64"
+  - yellow: "#e0af68"
+  - green: "#9ece6a"
+  - teal: "#1abc9c"
+  - blue: "#7aa2f7"
+  - cyan: "#7dcfff"
+  - blue-light: "#89ddff"
+  - magenta: "#bb9af7"
+  - purple: "#9d7cd8"

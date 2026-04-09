@@ -1,0 +1,14 @@
+name: ayu-light
+description: Ayu — light variant with warm whites and saturated accents
+url: https://github.com/dempfi/ayu
+colors:
+  - background: "#fafafa"
+  - foreground: "#575f66"
+  - comment: "#abb0b6"
+  - red: "#f07171"
+  - orange: "#fa8d3e"
+  - yellow: "#f2ae49"
+  - green: "#86b300"
+  - teal: "#4cbf99"
+  - blue: "#399ee6"
+  - purple: "#a37acc"

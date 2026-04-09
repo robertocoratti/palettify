@@ -1,0 +1,15 @@
+name: material-palenight
+description: Material Theme — Palenight variant, muted purple-dark background
+url: https://material-theme.com
+colors:
+  - background: "#292d3e"
+  - current-line: "#2f3347"
+  - foreground: "#a6accd"
+  - comment: "#676e95"
+  - red: "#f07178"
+  - orange: "#f78c6c"
+  - yellow: "#ffcb6b"
+  - green: "#c3e88d"
+  - cyan: "#89ddff"
+  - blue: "#82aaff"
+  - purple: "#c792ea"
