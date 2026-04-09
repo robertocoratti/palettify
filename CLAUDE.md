@@ -14,20 +14,20 @@ git config core.hooksPath .githooks
 
 ```bash
 # Build the CLI (dev)
-cargo build -p palettify-cli
+cargo build -p palettify
 
 # Build optimized release binary (~5 MB, no runtime deps)
-cargo build -p palettify-cli --release
+cargo build -p palettify --release
 
 # Run the CLI
-cargo run -p palettify-cli -- --help
+cargo run -p palettify -- --help
 
 # Run all tests
 cargo test
 
 # Run tests for a specific crate
 cargo test -p palettify-core
-cargo test -p palettify-cli
+cargo test -p palettify
 
 # Run a specific test file (e.g., color tests)
 cargo test -p palettify-core --test color

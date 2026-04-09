@@ -7,15 +7,14 @@ Built in Rust with OKLab perceptual color matching and Rayon parallelism.
 ## Install
 
 ```bash
+# From crates.io
+cargo install palettify
+
+# From source
 cargo install --path cli
 ```
 
-Or build manually:
-
-```bash
-cargo build -p palettify-cli --release
-# binary at: target/release/palettify
-```
+Pre-built binaries for Linux, macOS, and Windows are available on the [releases page](https://github.com/robertocoratti/palettify/releases).
 
 ## Usage
 

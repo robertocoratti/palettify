@@ -58,11 +58,11 @@ jobs:
 
       - name: Build (cross)
         if: matrix.cross
-        run: cross build -p palettify-cli --release --target ${{ matrix.target }}
+        run: cross build -p palettify --release --target ${{ matrix.target }}
 
       - name: Build (cargo)
         if: ${{ !matrix.cross }}
-        run: cargo build -p palettify-cli --release --target ${{ matrix.target }}
+        run: cargo build -p palettify --release --target ${{ matrix.target }}
 
       # ── Package ──────────────────────────────────────────────────────────────
 

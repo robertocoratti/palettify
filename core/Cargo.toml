@@ -1,9 +1,15 @@
 [package]
 name        = "palettify-core"
-version     = "0.1.0"
-edition     = "2021"
-description = "Core image color palette mapping library"
-authors     = ["Roberto Coratti <corattiroberto@gmail.com>"]
+description = "Core library for OKLab-based image color palette mapping"
+version.workspace    = true
+edition.workspace    = true
+authors.workspace    = true
+license.workspace    = true
+repository.workspace = true
+homepage.workspace   = true
+readme.workspace     = true
+keywords    = ["image", "color", "palette", "oklab", "dithering"]
+categories  = ["multimedia::images"]
 
 [dependencies]
 image      = "0.25"

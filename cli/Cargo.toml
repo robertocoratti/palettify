@@ -1,15 +1,21 @@
 [package]
-name        = "palettify-cli"
-version     = "0.1.0"
-edition     = "2021"
-description = "CLI for palettify — local image color palette mapping"
-authors     = ["Roberto Coratti <corattiroberto@gmail.com>"]
+name        = "palettify"
+description = "Remap image colors to a palette — fast CLI with OKLab color matching"
+version.workspace    = true
+edition.workspace    = true
+authors.workspace    = true
+license.workspace    = true
+repository.workspace = true
+homepage.workspace   = true
+readme.workspace     = true
+keywords    = ["image", "color", "palette", "cli", "dithering"]
+categories  = ["command-line-utilities", "multimedia::images"]
 
 [[bin]]
 name = "palettify"
 path = "src/main.rs"
 
 [dependencies]
-palettify-core = { path = "../core" }
-image = "0.25"
-clap  = { version = "4", features = ["derive"] }
+palettify-core = { path = "../core", version = "0.1.0" }
+image          = "0.25"
+clap           = { version = "4", features = ["derive"] }

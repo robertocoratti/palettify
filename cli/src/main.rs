@@ -7,16 +7,16 @@ use palettify_core::{algorithm::Algorithm, palette::Palette, processor::process_
 // ── Embedded palettes ────────────────────────────────────────────────────────
 
 const EMBEDDED: &[(&str, &str)] = &[
-    ("catppuccin-latte",  include_str!("../../palettes/catppuccin-latte.yaml")),
-    ("catppuccin-mocha",  include_str!("../../palettes/catppuccin-mocha.yaml")),
-    ("dracula",           include_str!("../../palettes/dracula.yaml")),
-    ("gruvbox-dark",      include_str!("../../palettes/gruvbox-dark.yaml")),
-    ("gruvbox-light",     include_str!("../../palettes/gruvbox-light.yaml")),
-    ("nord",              include_str!("../../palettes/nord.yaml")),
-    ("one-dark",          include_str!("../../palettes/one-dark.yaml")),
-    ("rose-pine",         include_str!("../../palettes/rose-pine.yaml")),
-    ("solarized-dark",    include_str!("../../palettes/solarized-dark.yaml")),
-    ("tokyo-night",       include_str!("../../palettes/tokyo-night.yaml")),
+    ("catppuccin-latte",  include_str!("../palettes/catppuccin-latte.yaml")),
+    ("catppuccin-mocha",  include_str!("../palettes/catppuccin-mocha.yaml")),
+    ("dracula",           include_str!("../palettes/dracula.yaml")),
+    ("gruvbox-dark",      include_str!("../palettes/gruvbox-dark.yaml")),
+    ("gruvbox-light",     include_str!("../palettes/gruvbox-light.yaml")),
+    ("nord",              include_str!("../palettes/nord.yaml")),
+    ("one-dark",          include_str!("../palettes/one-dark.yaml")),
+    ("rose-pine",         include_str!("../palettes/rose-pine.yaml")),
+    ("solarized-dark",    include_str!("../palettes/solarized-dark.yaml")),
+    ("tokyo-night",       include_str!("../palettes/tokyo-night.yaml")),
 ];
 
 fn palette_names() -> String {
