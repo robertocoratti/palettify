@@ -97,11 +97,17 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Publish palettify-core
-        run: cargo publish -p palettify-core
+        run: |
+          out=$(cargo publish -p palettify-core 2>&1); rc=$?
+          echo "$out"
+          [[ $rc -eq 0 ]] || echo "$out" | grep -q "already exists" || exit $rc
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
       - name: Publish palettify
-        run: cargo publish -p palettify
+        run: |
+          out=$(cargo publish -p palettify 2>&1); rc=$?
+          echo "$out"
+          [[ $rc -eq 0 ]] || echo "$out" | grep -q "already exists" || exit $rc
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
 
