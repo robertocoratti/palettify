@@ -32,7 +32,7 @@ fn is_valid_hex(hex: &str) -> bool {
 
 fn main() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let palettes_dir = PathBuf::from(&manifest_dir).join("../palettes");
+    let palettes_dir = PathBuf::from(&manifest_dir).join("palettes");
 
     // Collect and sort YAML files.
     let mut yaml_files: Vec<PathBuf> = fs::read_dir(&palettes_dir)
@@ -116,7 +116,8 @@ fn main() {
     }
     code.push_str("];\n");
 
-    let out_path = PathBuf::from(&manifest_dir).join("src/palettes_generated.rs");
+    let out_dir = env::var("OUT_DIR").unwrap();
+    let out_path = PathBuf::from(&out_dir).join("palettes_generated.rs");
     fs::write(&out_path, code)
         .unwrap_or_else(|e| panic!("build error: cannot write generated palettes: {e}"));
 }
