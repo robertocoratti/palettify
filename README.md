@@ -1,6 +1,9 @@
-# palettify
+<p align="center">
+  <img src="assets/banner.svg" alt="palettify" width="100%"/>
+</p>
 
 [![CI](https://github.com/robertocoratti/palettify/actions/workflows/ci.yml/badge.svg)](https://github.com/robertocoratti/palettify/actions/workflows/ci.yml)
+[![Release](https://github.com/robertocoratti/palettify/actions/workflows/release.yml/badge.svg)](https://github.com/robertocoratti/palettify/actions/workflows/release.yml)
 [![Crates.io](https://img.shields.io/crates/v/palettify.svg)](https://crates.io/crates/palettify)
 [![Crates.io Downloads](https://img.shields.io/crates/d/palettify.svg)](https://crates.io/crates/palettify)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
