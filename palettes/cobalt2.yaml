@@ -1,0 +1,16 @@
+name: cobalt2
+description: High-contrast dark theme with golden yellows and electric accents by Wes Bos
+url: https://github.com/wesbos/cobalt2
+colors:
+  - background: "#193549"
+  - surface: "#122738"
+  - selection: "#0d3a58"
+  - comment: "#0088ff"
+  - foreground: "#ffffff"
+  - green: "#3ad900"
+  - red: "#ff628c"
+  - keyword: "#ff9d00"
+  - yellow: "#ffc600"
+  - cyan: "#9effff"
+  - teal: "#80ffbb"
+  - blue-dark: "#0050a4"

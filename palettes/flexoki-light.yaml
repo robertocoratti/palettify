@@ -1,0 +1,17 @@
+name: flexoki-light
+description: An inky color scheme for prose and code — light variant
+url: https://stephango.com/flexoki
+colors:
+  - background: "#fffcf0"
+  - surface: "#f2f0e5"
+  - overlay: "#e6e4d9"
+  - muted: "#b7b5ac"
+  - foreground: "#100f0f"
+  - red: "#d14d41"
+  - orange: "#da702c"
+  - yellow: "#d0a215"
+  - green: "#879a39"
+  - cyan: "#3aa99f"
+  - blue: "#4385be"
+  - purple: "#8b7ec8"
+  - magenta: "#ce5d97"

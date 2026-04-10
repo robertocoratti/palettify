@@ -1,0 +1,15 @@
+name: iceberg-dark
+description: A cool-toned dark color scheme inspired by icebergs
+url: https://cocopon.github.io/iceberg.vim
+colors:
+  - background: "#161821"
+  - surface: "#1e2132"
+  - overlay: "#2e3244"
+  - muted: "#404660"
+  - foreground: "#c6c8d1"
+  - red: "#e27878"
+  - green: "#b4be82"
+  - yellow: "#e2a478"
+  - blue: "#84a0c6"
+  - purple: "#a093c7"
+  - cyan: "#89b8c2"

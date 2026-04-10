@@ -1,0 +1,16 @@
+name: github-light
+description: GitHub's official light theme
+url: https://github.com/primer/github-vscode-theme
+colors:
+  - background: "#ffffff"
+  - surface: "#f6f8fa"
+  - overlay: "#eaeef2"
+  - muted: "#8c959f"
+  - foreground: "#24292f"
+  - blue: "#0550ae"
+  - green: "#1a7f37"
+  - yellow: "#9a6700"
+  - orange: "#bc4c00"
+  - red: "#cf222e"
+  - purple: "#8250df"
+  - cyan: "#1b7c83"

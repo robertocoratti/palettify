@@ -1,0 +1,20 @@
+name: pico-8
+description: The 16-color palette of the PICO-8 fantasy console
+url: https://www.lexaloffle.com/pico-8.php
+colors:
+  - black: "#000000"
+  - dark-blue: "#1d2b53"
+  - dark-purple: "#7e2553"
+  - dark-green: "#008751"
+  - brown: "#ab5236"
+  - dark-gray: "#5f574f"
+  - light-gray: "#c2c3c7"
+  - white: "#fff1e8"
+  - red: "#ff004d"
+  - orange: "#ffa300"
+  - yellow: "#ffec27"
+  - green: "#00e436"
+  - blue: "#29adff"
+  - lavender: "#83769c"
+  - pink: "#ff77a8"
+  - peach: "#ffccaa"

@@ -1,0 +1,17 @@
+name: github-dark
+description: GitHub's official dark theme
+url: https://github.com/primer/github-vscode-theme
+colors:
+  - background: "#0d1117"
+  - surface: "#161b22"
+  - overlay: "#21262d"
+  - muted: "#8b949e"
+  - foreground: "#c9d1d9"
+  - blue: "#58a6ff"
+  - green: "#3fb950"
+  - yellow: "#d29922"
+  - orange: "#f0883e"
+  - red: "#f85149"
+  - purple: "#bc8cff"
+  - cyan: "#39c5cf"
+  - pink: "#db61a2"

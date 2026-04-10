@@ -1,0 +1,15 @@
+name: pastel
+description: Soft pastel tones for gentle, dreamy aesthetics
+colors:
+  - pastel-pink: "#ffb3ba"
+  - pastel-peach: "#ffdfba"
+  - pastel-yellow: "#ffffba"
+  - pastel-green: "#baffc9"
+  - pastel-blue: "#bae1ff"
+  - pastel-lavender: "#e8baff"
+  - pastel-mint: "#b5ead7"
+  - pastel-rose: "#ffc8dd"
+  - pastel-sky: "#c7e9ff"
+  - pastel-cream: "#fff8e7"
+  - pastel-lilac: "#d8b4fe"
+  - pastel-sage: "#b7d7a8"

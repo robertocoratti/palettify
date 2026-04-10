@@ -1,0 +1,20 @@
+name: sweetie-16
+description: A well-balanced 16-color palette for pixel art, by GrafxKid
+url: https://lospec.com/palette-list/sweetie-16
+colors:
+  - black: "#1a1c2c"
+  - dark-purple: "#5d275d"
+  - red: "#b13e53"
+  - orange: "#ef7d57"
+  - yellow: "#ffcd75"
+  - light-green: "#a7f070"
+  - green: "#38b764"
+  - dark-teal: "#257179"
+  - dark-blue: "#29366f"
+  - blue: "#3b5dc9"
+  - light-blue: "#41a6f6"
+  - cyan: "#73eff7"
+  - white: "#f4f4f4"
+  - light-gray: "#94b0c2"
+  - gray: "#566c86"
+  - dark-gray: "#333c57"

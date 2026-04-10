@@ -1,7 +1,6 @@
 # palettify
 
 [![CI](https://github.com/robertocoratti/palettify/actions/workflows/ci.yml/badge.svg)](https://github.com/robertocoratti/palettify/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/robertocoratti/palettify/branch/main/graph/badge.svg)](https://codecov.io/gh/robertocoratti/palettify)
 [![Crates.io](https://img.shields.io/crates/v/palettify.svg)](https://crates.io/crates/palettify)
 [![Crates.io Downloads](https://img.shields.io/crates/d/palettify.svg)](https://crates.io/crates/palettify)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -55,10 +54,14 @@ All operate in **OKLab** perceptual color space:
 | `floyd-steinberg` | Floyd-Steinberg dithering | Photographs, smooth gradients |
 | `ordered` | Ordered / Bayer 4×4 dithering | Retro / crosshatch look — fully parallel |
 
-## Built-in palettes
+## Built-in palettes (60)
+
+**Editor & terminal themes**
 
 | Slug | Colors |
 |---|---|
+| `andromeda` | 12 |
+| `aura` | 11 |
 | `ayu-dark` | 12 |
 | `ayu-light` | 10 |
 | `ayu-mirage` | 11 |
@@ -66,20 +69,31 @@ All operate in **OKLab** perceptual color space:
 | `catppuccin-latte` | 25 |
 | `catppuccin-macchiato` | 26 |
 | `catppuccin-mocha` | 26 |
+| `cobalt2` | 12 |
 | `dracula` | 11 |
 | `everforest-dark` | 17 |
 | `everforest-light` | 17 |
+| `flexoki-dark` | 13 |
+| `flexoki-light` | 13 |
+| `github-dark` | 13 |
+| `github-light` | 12 |
 | `gruvbox-dark` | 23 |
 | `gruvbox-light` | 22 |
 | `gruvbox-material-dark` | 18 |
+| `horizon` | 12 |
+| `iceberg-dark` | 11 |
+| `iceberg-light` | 11 |
 | `kanagawa` | 16 |
 | `material-ocean` | 12 |
 | `material-palenight` | 11 |
 | `monokai` | 9 |
 | `monokai-pro` | 9 |
+| `moonlight` | 14 |
 | `nightfox` | 18 |
+| `night-owl` | 13 |
 | `nord` | 16 |
 | `one-dark` | 15 |
+| `one-light` | 11 |
 | `oxocarbon` | 16 |
 | `poimandres` | 14 |
 | `rose-pine` | 12 |
@@ -87,10 +101,35 @@ All operate in **OKLab** perceptual color space:
 | `rose-pine-moon` | 15 |
 | `solarized-dark` | 16 |
 | `solarized-light` | 16 |
+| `synthwave-84` | 12 |
 | `tokyo-night` | 17 |
 | `tokyonight-moon` | 17 |
 | `tokyonight-storm` | 17 |
+| `vesper` | 11 |
 | `zenburn` | 13 |
+
+**Retro & pixel art**
+
+| Slug | Colors |
+|---|---|
+| `arne-16` | 16 |
+| `cga` | 16 |
+| `commodore-64` | 16 |
+| `gameboy` | 4 |
+| `gameboy-pocket` | 4 |
+| `pico-8` | 16 |
+| `sweetie-16` | 16 |
+| `zx-spectrum` | 15 |
+
+**Design & art**
+
+| Slug | Colors |
+|---|---|
+| `earth-tones` | 14 |
+| `flat-ui` | 20 |
+| `neon` | 12 |
+| `pastel` | 12 |
+| `tailwind` | 20 |
 
 Run `palettify --list-palettes` for a full list with descriptions.
 

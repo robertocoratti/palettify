@@ -1,0 +1,20 @@
+name: commodore-64
+description: The 16-color palette of the Commodore 64 home computer (Pepto)
+url: https://www.pepto.de/projects/colorvic
+colors:
+  - black: "#000000"
+  - white: "#ffffff"
+  - red: "#813338"
+  - cyan: "#75cec8"
+  - purple: "#8e3c97"
+  - green: "#56ac4d"
+  - blue: "#2e2c9b"
+  - yellow: "#edf171"
+  - orange: "#8e5029"
+  - brown: "#553800"
+  - light-red: "#c46c71"
+  - dark-gray: "#4a4a4a"
+  - gray: "#7b7b7b"
+  - light-green: "#a9ff9f"
+  - light-blue: "#706deb"
+  - light-gray: "#b2b2b2"

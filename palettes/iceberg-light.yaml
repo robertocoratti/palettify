@@ -1,0 +1,15 @@
+name: iceberg-light
+description: A cool-toned light color scheme inspired by icebergs
+url: https://cocopon.github.io/iceberg.vim
+colors:
+  - background: "#e8e9ec"
+  - surface: "#dcdfe7"
+  - overlay: "#cdd1df"
+  - muted: "#8389a3"
+  - foreground: "#33374c"
+  - red: "#cc517a"
+  - green: "#668e3d"
+  - yellow: "#c57339"
+  - blue: "#2d539e"
+  - purple: "#7759b4"
+  - cyan: "#3d8fb5"

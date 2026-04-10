@@ -1,0 +1,15 @@
+name: aura
+description: A soft dark theme with purple tones and neon accents
+url: https://github.com/daltonmenezes/aura-theme
+colors:
+  - background: "#15141b"
+  - surface: "#1b1924"
+  - muted: "#6d6d6d"
+  - foreground: "#edecee"
+  - purple: "#a277ff"
+  - green: "#61ffca"
+  - pink: "#f694ff"
+  - orange: "#ffca85"
+  - red: "#ff6767"
+  - blue: "#82e2ff"
+  - cyan: "#6beffc"

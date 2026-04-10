@@ -1,0 +1,17 @@
+name: night-owl
+description: A dark theme optimized for accessibility and reduced eye strain, by Sarah Drasner
+url: https://github.com/sdras/night-owl-vscode-theme
+colors:
+  - background: "#011627"
+  - surface: "#0b2942"
+  - selection: "#1d3b53"
+  - comment: "#637777"
+  - foreground: "#d6deeb"
+  - red: "#ff6363"
+  - orange: "#f78c6c"
+  - yellow: "#ecc48d"
+  - green: "#addb67"
+  - teal: "#7fdbca"
+  - cyan: "#21c7a8"
+  - blue: "#82aaff"
+  - purple: "#c792ea"

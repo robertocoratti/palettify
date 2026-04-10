@@ -1,0 +1,15 @@
+name: neon
+description: Vivid neon colors against a near-black background
+colors:
+  - background: "#0a0a0a"
+  - surface: "#1a1a2e"
+  - neon-pink: "#ff00ff"
+  - neon-cyan: "#00ffff"
+  - neon-green: "#00ff00"
+  - neon-yellow: "#ffff00"
+  - neon-orange: "#ff6600"
+  - neon-red: "#ff0066"
+  - neon-blue: "#0066ff"
+  - neon-purple: "#cc00ff"
+  - neon-lime: "#ccff00"
+  - neon-teal: "#00ffcc"

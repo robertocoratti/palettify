@@ -1,0 +1,17 @@
+name: earth-tones
+description: Natural earth-inspired palette with warm soils, stones, and greens
+colors:
+  - soil: "#3d2b1f"
+  - bark: "#5c3d2e"
+  - clay: "#8b4513"
+  - terracotta: "#c76d47"
+  - copper: "#b87333"
+  - sand: "#c2a066"
+  - wheat: "#d4a96a"
+  - straw: "#e8d5a3"
+  - moss: "#6b7c48"
+  - sage: "#8f9d6a"
+  - forest: "#4a5f3a"
+  - stone: "#8a8275"
+  - slate: "#6b7280"
+  - rust: "#8b3a3a"

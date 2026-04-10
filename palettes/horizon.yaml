@@ -1,0 +1,16 @@
+name: horizon
+description: A warm, vibrant dark theme with rose and teal accents
+url: https://horizontheme.netlify.app
+colors:
+  - background: "#1c1e26"
+  - surface: "#232530"
+  - overlay: "#2e303e"
+  - muted: "#6c6f93"
+  - foreground: "#d5d8da"
+  - red: "#e95379"
+  - orange: "#fab795"
+  - yellow: "#fac29a"
+  - green: "#29d398"
+  - teal: "#59e3e3"
+  - blue: "#21bfc2"
+  - pink: "#ee64ac"

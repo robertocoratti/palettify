@@ -1,0 +1,19 @@
+name: cga
+description: The 16-color palette of the IBM Color Graphics Adapter
+colors:
+  - black: "#000000"
+  - dark-blue: "#0000aa"
+  - dark-green: "#00aa00"
+  - dark-cyan: "#00aaaa"
+  - dark-red: "#aa0000"
+  - dark-magenta: "#aa00aa"
+  - brown: "#aa5500"
+  - light-gray: "#aaaaaa"
+  - dark-gray: "#555555"
+  - bright-blue: "#5555ff"
+  - bright-green: "#55ff55"
+  - bright-cyan: "#55ffff"
+  - bright-red: "#ff5555"
+  - bright-magenta: "#ff55ff"
+  - bright-yellow: "#ffff55"
+  - white: "#ffffff"

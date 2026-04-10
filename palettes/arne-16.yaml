@@ -1,0 +1,20 @@
+name: arne-16
+description: A versatile 16-color palette for pixel art and game development, by Arne Niklas Jansson
+url: https://lospec.com/palette-list/arne-16
+colors:
+  - black: "#000000"
+  - gray: "#9d9d9d"
+  - white: "#ffffff"
+  - red: "#be2633"
+  - pink: "#e06f8b"
+  - brown: "#493c2b"
+  - tan: "#a46422"
+  - orange: "#eb8931"
+  - yellow: "#f7e26b"
+  - dark-green: "#2f484e"
+  - green: "#44891a"
+  - light-green: "#a3ce27"
+  - dark-navy: "#1b2632"
+  - navy: "#005784"
+  - blue: "#31a2f2"
+  - light-blue: "#b2dcef"

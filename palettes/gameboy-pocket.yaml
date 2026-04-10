@@ -1,0 +1,7 @@
+name: gameboy-pocket
+description: The neutral gray-scale palette of the Game Boy Pocket
+colors:
+  - darkest: "#1f1f1f"
+  - dark: "#555555"
+  - light: "#a8a89f"
+  - lightest: "#c8c6be"

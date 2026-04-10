@@ -1,0 +1,16 @@
+name: andromeda
+description: A vibrant dark theme with electric accents
+url: https://github.com/EliverLara/Andromeda
+colors:
+  - background: "#23262e"
+  - surface: "#262a33"
+  - selection: "#3c4354"
+  - comment: "#676b79"
+  - foreground: "#d5ced9"
+  - red: "#f92672"
+  - orange: "#ff7149"
+  - yellow: "#ffd000"
+  - green: "#83d0b1"
+  - blue: "#00b4d8"
+  - purple: "#c74ded"
+  - cyan: "#4df9f8"

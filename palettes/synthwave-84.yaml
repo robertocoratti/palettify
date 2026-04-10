@@ -1,0 +1,16 @@
+name: synthwave-84
+description: A retro-futuristic theme inspired by 80s synthwave music
+url: https://github.com/robb0wen/synthwave-vscode
+colors:
+  - background: "#2b213a"
+  - surface: "#241b2f"
+  - selection: "#3b3154"
+  - comment: "#848bbd"
+  - foreground: "#ffffff"
+  - pink: "#ff7edb"
+  - cyan: "#36f9f6"
+  - yellow: "#fede5d"
+  - orange: "#ff8b39"
+  - green: "#72f1b8"
+  - red: "#f97e72"
+  - blue: "#6cc5f1"
