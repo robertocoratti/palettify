@@ -74,7 +74,7 @@ jobs:
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             ARCHIVE="${BIN}-${VERSION}-${{ matrix.target }}.zip"
             cp "target/${{ matrix.target }}/release/${BIN}.exe" "${BIN}.exe"
-            zip "${ARCHIVE}" "${BIN}.exe"
+            powershell -Command "Compress-Archive -Path '${BIN}.exe' -DestinationPath '${ARCHIVE}'"
           else
             ARCHIVE="${BIN}-${VERSION}-${{ matrix.target }}.tar.gz"
             cp "target/${{ matrix.target }}/release/${BIN}" "${BIN}"
