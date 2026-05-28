@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Built with Rust](https://img.shields.io/badge/built%20with-Rust-orange.svg?logo=rust)](https://www.rust-lang.org)
 
-Remap any image's colors to a palette — fast.
+Remap any image's colors to a palette.
 
 Built in Rust with OKLab perceptual color matching and Rayon parallelism.
 
